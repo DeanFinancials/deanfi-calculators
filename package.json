@@ -1,0 +1,39 @@
+{
+  "name": "@deanfinancials/calculators",
+  "version": "1.0.0",
+  "description": "Transparent financial calculator library used by DeanFinancials.com",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"No tests yet\" && exit 0",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "financial-calculators",
+    "retirement-calculator",
+    "debt-calculator",
+    "mortgage-calculator",
+    "loan-calculator",
+    "401k-calculator",
+    "social-security",
+    "debt-payoff",
+    "finance",
+    "typescript"
+  ],
+  "author": "Dean Financials",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GibsonNeo/deanfi-calculators.git"
+  },
+  "homepage": "https://github.com/GibsonNeo/deanfi-calculators#readme",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
+}
