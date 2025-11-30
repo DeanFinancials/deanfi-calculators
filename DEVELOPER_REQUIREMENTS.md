@@ -796,6 +796,61 @@ git commit -m "chore: update @deanfinancials/calculators to v1.0.1"
 
 ---
 
+## Adding New Calculators (REQUIRED PROCESS)
+
+**CRITICAL:** Every new calculator on the website MUST have its calculation logic added to this package first.
+
+### New Calculator Workflow
+
+1. **Create Calculator Logic Here First:**
+   - Add new TypeScript file in appropriate category folder (`src/debt/`, `src/retirement/`, `src/investment/`)
+   - Define interfaces for inputs and outputs
+   - Implement pure calculation functions with JSDoc documentation
+   - NO side effects, NO UI logic, NO dependencies
+
+2. **Export from Index:**
+   - Add exports to `src/index.ts` with `.js` extension
+   - Export all types and functions
+   - Use explicit exports (not wildcard) for clarity
+
+3. **Build and Publish:**
+   ```bash
+   npm run build
+   npm version patch  # or minor for new features
+   npm publish --access public
+   ```
+
+4. **Update Website:**
+   ```bash
+   cd ../deanfi-website
+   npm install @deanfinancials/calculators@latest
+   ```
+
+5. **Import in Website Component:**
+   ```typescript
+   import { calculateCompoundInterest } from '@deanfinancials/calculators';
+   ```
+
+### Category Structure
+
+| Category | Folder | Purpose |
+|----------|--------|---------|
+| Debt | `src/debt/` | Debt payoff, credit cards, loans, mortgages |
+| Retirement | `src/retirement/` | Retirement planning, 401(k), Social Security |
+| Investment | `src/investment/` | Compound interest, investment returns |
+| (Future) | `src/tax/` | Tax calculations |
+| (Future) | `src/budget/` | Budget planning tools |
+
+### Why This Process Matters
+
+- **Transparency:** Users can verify calculations on npm/GitHub
+- **Reusability:** Same logic across website, future apps
+- **Testing:** Pure functions are easier to test
+- **Versioning:** Track calculation changes properly
+- **No Duplication:** Single source of truth for all calculation logic
+
+---
+
 ## Future Enhancements
 
 ### Planned Features
@@ -806,7 +861,7 @@ git commit -m "chore: update @deanfinancials/calculators to v1.0.1"
    - Regression tests
 
 2. **Additional Calculators**
-   - Investment return calculators
+   - More investment calculators (CAGR, ROI, etc.)
    - Tax calculators
    - Budget planning tools
 

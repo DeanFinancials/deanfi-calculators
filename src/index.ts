@@ -51,3 +51,17 @@ export {
   calculateMortgage,
   calculateAffordableHome
 } from './debt/mortgageCalculator.js';
+
+// Investment Calculators
+export {
+  type CompoundingFrequency,
+  type ContributionTiming,
+  type CompoundInterestInputs,
+  type YearlyBreakdown,
+  type CompoundInterestResult,
+  getPeriodsPerYear,
+  calculateEffectiveAnnualRate,
+  calculateYearsToDouble,
+  calculateCompoundInterest,
+  compareCompoundInterestScenarios
+} from './investment/compoundInterest.js';

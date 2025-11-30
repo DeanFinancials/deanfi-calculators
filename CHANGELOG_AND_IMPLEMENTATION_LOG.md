@@ -10,9 +10,134 @@ This document tracks all changes, implementations, and design decisions for the 
 
 ## Table of Contents
 
+- [Version 1.1.0 - Investment Calculator Module](#version-110---2025-01-xx)
 - [Version 1.0.1 - ESM Import Path Fix](#version-101---2025-11-21)
 - [Version 1.0.0 - Initial Publication](#version-100---2025-11-21)
 - [Pre-Publication Development](#pre-publication-development)
+
+---
+
+## Version 1.1.0 - 2025-01-XX
+
+**Type:** New Feature (MINOR)  
+**Status:** Ready for publish  
+**npm:** (pending publication)
+
+### Overview
+
+Added new Investment calculator module with Compound Interest calculator as the first investment tool. This calculator supports continuous and discrete compounding, regular contributions, and provides detailed yearly breakdowns.
+
+### New Files Created
+
+**src/investment/compoundInterest.ts:**
+
+Complete compound interest calculator with the following exports:
+
+**Types:**
+- `CompoundingFrequency` - Union type: 'annually' | 'semi-annually' | 'quarterly' | 'monthly' | 'daily' | 'continuously'
+- `ContributionTiming` - Union type: 'beginning' | 'end'
+- `CompoundInterestInputs` - Interface for calculator inputs
+- `YearlyBreakdown` - Interface for year-by-year results
+- `CompoundInterestResult` - Interface for final calculation results
+
+**Functions:**
+- `getPeriodsPerYear(frequency)` - Returns periods per year for given frequency
+- `calculateEffectiveAnnualRate(nominalRate, frequency)` - Calculates APY from APR
+- `calculateYearsToDouble(annualRate)` - Rule of 72 calculation
+- `calculateCompoundInterest(inputs)` - Main calculation function
+- `compareCompoundInterestScenarios(scenarios)` - Compare multiple scenarios
+
+**Features:**
+- Supports continuous compounding (e^rt formula)
+- Supports discrete compounding (standard compound interest formula)
+- Regular contribution handling with beginning/end of period timing
+- Year-by-year breakdown with principal/interest tracking
+- Effective annual rate (APY) calculation
+- Rule of 72 for doubling time estimation
+- Scenario comparison functionality
+
+### Files Modified
+
+**src/index.ts:**
+Added exports for the new investment module:
+
+```typescript
+// Investment Calculators
+export {
+  type CompoundingFrequency,
+  type ContributionTiming,
+  type CompoundInterestInputs,
+  type YearlyBreakdown,
+  type CompoundInterestResult,
+  getPeriodsPerYear,
+  calculateEffectiveAnnualRate,
+  calculateYearsToDouble,
+  calculateCompoundInterest,
+  compareCompoundInterestScenarios
+} from './investment/compoundInterest.js';
+```
+
+### Documentation Updates
+
+**DEVELOPER_REQUIREMENTS.md:**
+- Added "Adding New Calculators (REQUIRED PROCESS)" section
+- Documented the requirement that all calculation logic must be added to this package first
+- Added category structure table (Debt, Retirement, Investment, future Tax/Budget)
+- Added new calculator development workflow
+
+### Usage Example
+
+```typescript
+import { 
+  calculateCompoundInterest,
+  calculateEffectiveAnnualRate,
+  calculateYearsToDouble 
+} from '@deanfinancials/calculators';
+
+// Calculate compound interest
+const result = calculateCompoundInterest({
+  principal: 10000,
+  annualRate: 0.08,
+  years: 30,
+  compoundingFrequency: 'monthly',
+  monthlyContribution: 500,
+  contributionTiming: 'end'
+});
+
+console.log(result.finalBalance);       // Final amount
+console.log(result.totalContributions); // Total contributed
+console.log(result.totalInterest);      // Interest earned
+console.log(result.yearlyBreakdown);    // Year-by-year details
+
+// Calculate APY
+const apy = calculateEffectiveAnnualRate(0.08, 'monthly');
+// Returns: 0.0830 (8.30% effective annual rate)
+
+// Rule of 72
+const yearsToDouble = calculateYearsToDouble(0.08);
+// Returns: 9.01 years to double at 8% interest
+```
+
+### Related Website Implementation
+
+This calculator logic is used by the Compound Interest Calculator on deanfi-website:
+- Page: `/investment/compound-interest`
+- Component: `src/components/calculators/CompoundInterestCalculator.tsx`
+
+### Testing Required (Before Publish)
+
+```bash
+npm run build
+# Verify dist/investment/compoundInterest.js exists
+# Verify exports in dist/index.js include investment module
+
+# Test locally with npm link
+npm link
+cd ../deanfi-website
+npm link @deanfinancials/calculators
+npm run dev
+# Visit /investment/compound-interest and test calculations
+```
 
 ---
 
