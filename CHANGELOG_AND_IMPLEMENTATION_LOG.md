@@ -10,10 +10,117 @@ This document tracks all changes, implementations, and design decisions for the 
 
 ## Table of Contents
 
+- [Version 1.2.0 - Savings Goal Calculator](#version-120---2025-11-30)
 - [Version 1.1.0 - Investment Calculator Module](#version-110---2025-01-xx)
 - [Version 1.0.1 - ESM Import Path Fix](#version-101---2025-11-21)
 - [Version 1.0.0 - Initial Publication](#version-100---2025-11-21)
 - [Pre-Publication Development](#pre-publication-development)
+
+---
+
+## Version 1.2.0 - 2025-11-30
+
+**Type:** New Feature (MINOR)  
+**Status:** Published  
+**npm:** @deanfinancials/calculators@1.2.0
+
+### Overview
+
+Added Savings Goal Calculator to the investment module. This calculator determines how much to save monthly to reach any financial goal, with support for emergency funds, home down payments, and custom goals. Includes milestone tracking, scenario comparison, and quick calculators for common goal types.
+
+### New Files Created
+
+**src/investment/savingsGoal.ts:**
+
+Complete savings goal calculator with the following exports:
+
+**Types:**
+- `SavingsGoalType` - Union type: 'emergency-fund' | 'home-down-payment' | 'car' | 'vacation' | 'education' | 'wedding' | 'retirement' | 'custom'
+- `ContributionFrequency` - Union type: 'weekly' | 'bi-weekly' | 'monthly' | 'quarterly' | 'annually'
+- `SavingsGoalInputs` - Interface for calculator inputs
+- `YearlyProgress` - Interface for year-by-year progress with status tracking
+- `GoalMilestone` - Interface for milestone tracking (25%, 50%, 75%, 100%)
+- `SavingsScenario` - Interface for scenario comparison
+- `SavingsGoalResult` - Interface for complete calculation results
+
+**Functions:**
+- `getContributionPeriodsPerYear(frequency)` - Returns contribution periods per year
+- `calculateSavingsGoal(inputs)` - Main calculation function
+- `calculateTimeToGoal(goalAmount, currentSavings, monthlyContribution, returnRate)` - Calculate time to reach goal
+- `calculateEmergencyFundGoal(monthlyExpenses, months)` - Quick calculator for emergency fund
+- `calculateDownPaymentGoal(homePrice, downPaymentPercent, includeClosingCosts)` - Quick calculator with closing costs
+- `compareSavingsScenarios(scenarios)` - Compare multiple goal scenarios
+
+**Features:**
+- Calculates required monthly/annual savings
+- Supports multiple contribution frequencies
+- Year-by-year progress tracking with on-track/ahead/behind status
+- Milestone tracking at 25%, 50%, 75%, 100%
+- Scenario comparison (50% less, 25% less, Recommended, 25% more, 50% more)
+- Contribution vs returns percentage breakdown
+- Goal already achieved detection
+- Warning for high required savings rates
+
+### Files Modified
+
+**src/index.ts:**
+Added exports for savings goal calculator:
+```typescript
+export {
+  type SavingsGoalType,
+  type ContributionFrequency,
+  type SavingsGoalInputs,
+  type YearlyProgress,
+  type GoalMilestone,
+  type SavingsScenario,
+  type SavingsGoalResult,
+  getContributionPeriodsPerYear,
+  calculateSavingsGoal,
+  calculateTimeToGoal,
+  calculateEmergencyFundGoal,
+  calculateDownPaymentGoal,
+  compareSavingsScenarios
+} from './investment/savingsGoal.js';
+```
+
+### Usage Example
+
+```typescript
+import { 
+  calculateSavingsGoal, 
+  calculateEmergencyFundGoal,
+  calculateDownPaymentGoal 
+} from '@deanfinancials/calculators';
+
+// Calculate savings for emergency fund
+const emergencyGoal = calculateEmergencyFundGoal(4000, 6); // $24,000
+
+// Calculate down payment with closing costs
+const downPaymentGoal = calculateDownPaymentGoal(400000, 20, true); // $92,000
+
+// Calculate savings plan
+const result = calculateSavingsGoal({
+  goalAmount: 50000,
+  currentSavings: 5000,
+  yearsToGoal: 5,
+  expectedReturnRate: 5,
+  goalType: 'home-down-payment'
+});
+
+console.log(result.monthlyContribution); // ~$641/month
+console.log(result.totalReturns); // Interest earned
+console.log(result.milestones); // Progress milestones
+console.log(result.scenarios); // Comparison scenarios
+```
+
+### Testing
+
+Tested with deanfi-website SavingsGoalCalculator component:
+- All goal types working
+- Quick calculators producing correct results
+- Progress chart rendering correctly
+- Milestones tracking properly
+- Scenario comparison table accurate
 
 ---
 
