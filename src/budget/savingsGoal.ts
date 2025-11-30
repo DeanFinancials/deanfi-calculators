@@ -16,7 +16,7 @@
  * - PMT = Required payment per period
  */
 
-import { CompoundingFrequency, getPeriodsPerYear, calculateEffectiveAnnualRate } from './compoundInterest.js';
+import { CompoundingFrequency, getPeriodsPerYear, calculateEffectiveAnnualRate } from '../investment/compoundInterest.js';
 
 /**
  * Types of savings goals

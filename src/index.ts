@@ -66,6 +66,7 @@ export {
   compareCompoundInterestScenarios
 } from './investment/compoundInterest.js';
 
+// Budget Calculators
 export {
   type SavingsGoalType,
   type ContributionFrequency,
@@ -80,4 +81,4 @@ export {
   calculateEmergencyFundGoal,
   calculateDownPaymentGoal,
   compareSavingsScenarios
-} from './investment/savingsGoal.js';
+} from './budget/savingsGoal.js';

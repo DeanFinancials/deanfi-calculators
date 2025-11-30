@@ -1,7 +1,7 @@
 # Changelog and Implementation Log - @deanfinancials/calculators
 
 **Package:** @deanfinancials/calculators  
-**Repository:** https://github.com/GibsonNeo/deanfi-calculators  
+**Repository:** https://github.com/DeanFinancials/deanfi-calculators  
 **npm Registry:** https://www.npmjs.com/package/@deanfinancials/calculators
 
 This document tracks all changes, implementations, and design decisions for the calculator package.
@@ -10,11 +10,79 @@ This document tracks all changes, implementations, and design decisions for the 
 
 ## Table of Contents
 
+- [Version 1.2.1 - Budget Category & README Update](#version-121---2025-11-30)
 - [Version 1.2.0 - Savings Goal Calculator](#version-120---2025-11-30)
 - [Version 1.1.0 - Investment Calculator Module](#version-110---2025-01-xx)
 - [Version 1.0.1 - ESM Import Path Fix](#version-101---2025-11-21)
 - [Version 1.0.0 - Initial Publication](#version-100---2025-11-21)
 - [Pre-Publication Development](#pre-publication-development)
+
+---
+
+## Version 1.2.1 - 2025-11-30
+
+**Type:** Documentation + Restructure (PATCH)  
+**Status:** Published  
+**npm:** @deanfinancials/calculators@1.2.1
+
+### Overview
+
+1. Created new `src/budget/` directory for budget-related calculators
+2. Moved Savings Goal Calculator from `src/investment/` to `src/budget/`
+3. Updated README.md with complete documentation for all calculators
+4. Reorganized README to match website category structure: Retirement, Debt, Investment, Budget
+
+### Directory Changes
+
+**Before:**
+```
+src/
+├── debt/
+├── investment/
+│   ├── compoundInterest.ts
+│   └── savingsGoal.ts      ← Was here
+├── retirement/
+└── index.ts
+```
+
+**After:**
+```
+src/
+├── budget/
+│   └── savingsGoal.ts      ← Moved here
+├── debt/
+├── investment/
+│   └── compoundInterest.ts
+├── retirement/
+└── index.ts
+```
+
+### Files Changed
+
+**src/budget/savingsGoal.ts:**
+- Moved from `src/investment/savingsGoal.ts`
+- Updated import path for `compoundInterest.js` to `../investment/compoundInterest.js`
+
+**src/index.ts:**
+- Changed Savings Goal export from `./investment/savingsGoal.js` to `./budget/savingsGoal.js`
+- Added "Budget Calculators" comment section
+
+**README.md:**
+- Added complete documentation for Compound Interest Calculator (#10)
+- Added complete documentation for Savings Goal Calculator (#11)
+- Reorganized sections: "Investment & Savings" split into "Investment" and "Budget"
+- Fixed example code to use correct interface property names
+- Updated repository URL references
+
+### Standard Established
+
+This update establishes the category structure for the npm package:
+- **Retirement**: `src/retirement/` - Retirement planning calculators
+- **Debt**: `src/debt/` - Debt management calculators  
+- **Investment**: `src/investment/` - Investment growth calculators
+- **Budget**: `src/budget/` - Budget and savings goal calculators
+
+This matches the website navigation structure at deanfi.com.
 
 ---
 

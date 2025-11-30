@@ -279,6 +279,138 @@ const affordable = calculateAffordableHome(
 - Housing costs ≤ 28% of gross income
 - All debts ≤ 36% of gross income
 
+### Investment
+
+#### 10. Compound Interest Calculator
+Calculate compound interest growth with various compounding frequencies and contribution timing.
+
+```typescript
+import { 
+  calculateCompoundInterest, 
+  compareCompoundInterestScenarios,
+  calculateEffectiveAnnualRate,
+  calculateYearsToDouble 
+} from '@deanfinancials/calculators';
+
+// Calculate compound growth
+const result = calculateCompoundInterest({
+  principal: 10000,
+  annualRate: 7,
+  years: 30,
+  monthlyContribution: 500,
+  compoundingFrequency: 'monthly',
+  contributionTiming: 'beginning'
+});
+
+console.log(result.finalBalance);         // Total ending balance
+console.log(result.totalContributions);   // Sum of all contributions
+console.log(result.totalInterest);        // Interest earned
+console.log(result.effectiveAnnualRate);  // APY
+console.log(result.yearlyBreakdown);      // Year-by-year detail
+
+// Compare different scenarios
+const scenarios = compareCompoundInterestScenarios(
+  { principal: 10000, annualRate: 7, years: 30 },
+  [500, 750, 1000]  // Different contribution amounts
+);
+
+// Calculate effective annual rate (APY)
+const ear = calculateEffectiveAnnualRate(7, 'monthly'); // 7.23%
+
+// Calculate time to double (Rule of 72)
+const yearsToDouble = calculateYearsToDouble(7); // ~10.29 years
+```
+
+**Compounding Frequencies**: `annually`, `semi-annually`, `quarterly`, `monthly`, `daily`
+
+**Contribution Timing**:
+- **Beginning**: Contributions made at start of each period (more growth)
+- **End**: Contributions made at end of each period (typical paycheck timing)
+
+**Formulas**:
+```
+Compound Interest: A = P(1 + r/n)^(nt)
+Effective Annual Rate: EAR = (1 + r/n)^n - 1
+Rule of 72: Years to Double ≈ 72 / rate
+```
+
+### Budget
+
+#### 11. Savings Goal Calculator
+Calculate how much to save monthly to reach any financial goal with milestone tracking.
+
+```typescript
+import { 
+  calculateSavingsGoal,
+  calculateTimeToGoal,
+  calculateEmergencyFundGoal,
+  calculateDownPaymentGoal,
+  compareSavingsScenarios
+} from '@deanfinancials/calculators';
+
+// Calculate savings plan for a goal
+const result = calculateSavingsGoal({
+  goalAmount: 50000,
+  currentSavings: 5000,
+  yearsToGoal: 3,
+  expectedReturnRate: 5,
+  contributionFrequency: 'monthly',
+  goalType: 'home-down-payment'
+});
+
+console.log(result.requiredContribution);  // Amount per contribution period
+console.log(result.monthlyContribution);   // Monthly amount needed
+console.log(result.totalContributions);    // Sum of all contributions
+console.log(result.totalReturns);          // Interest/returns earned
+console.log(result.projectedBalance);      // Final balance
+console.log(result.milestones);            // 25%, 50%, 75%, 100% markers
+console.log(result.yearlyProgress);        // Year-by-year breakdown
+
+// Calculate time needed to reach a goal
+const timeToGoal = calculateTimeToGoal(
+  50000,  // Goal amount
+  5000,   // Current savings
+  1000,   // Monthly contribution
+  5       // Expected return rate
+);
+console.log(timeToGoal.years);             // Years to goal
+console.log(timeToGoal.months);            // Additional months
+console.log(timeToGoal.totalMonths);       // Total months
+
+// Emergency fund calculator (3-6 months expenses)
+const emergencyFund = calculateEmergencyFundGoal(
+  5000,   // Monthly expenses
+  6       // Months of coverage
+);
+console.log(emergencyFund);                // Target amount: $30,000
+
+// Down payment calculator (with closing costs)
+const downPayment = calculateDownPaymentGoal(
+  400000, // Home price
+  20,     // Down payment percentage (20%)
+  true    // Include 3% closing costs
+);
+console.log(downPayment);                  // Target amount: $92,000
+
+// Compare different savings scenarios
+const scenarios = compareSavingsScenarios([
+  { goalAmount: 50000, currentSavings: 5000, yearsToGoal: 3, expectedReturnRate: 3 },
+  { goalAmount: 50000, currentSavings: 5000, yearsToGoal: 3, expectedReturnRate: 5 },
+  { goalAmount: 50000, currentSavings: 5000, yearsToGoal: 3, expectedReturnRate: 7 }
+]);
+```
+
+**Goal Types**: `emergency-fund`, `home-down-payment`, `vacation`, `car`, `education`, `wedding`, `retirement`, `custom`
+
+**Contribution Frequencies**: `weekly`, `bi-weekly`, `monthly`, `quarterly`, `annually`
+
+**Features**:
+- Milestone tracking (25%, 50%, 75%, 100%)
+- Year-by-year progress breakdown with status (on-track, ahead, behind)
+- Scenario comparison with different contribution levels
+- Specialized calculators for emergency funds and down payments
+- Achievability warnings for difficult goals
+
 ## Formulas & Methodology
 
 All calculations use industry-standard formulas:
