@@ -65,3 +65,19 @@ export {
   calculateCompoundInterest,
   compareCompoundInterestScenarios
 } from './investment/compoundInterest.js';
+
+export {
+  type SavingsGoalType,
+  type ContributionFrequency,
+  type SavingsGoalInputs,
+  type YearlyProgress,
+  type GoalMilestone,
+  type SavingsScenario,
+  type SavingsGoalResult,
+  getContributionPeriodsPerYear,
+  calculateSavingsGoal,
+  calculateTimeToGoal,
+  calculateEmergencyFundGoal,
+  calculateDownPaymentGoal,
+  compareSavingsScenarios
+} from './investment/savingsGoal.js';
