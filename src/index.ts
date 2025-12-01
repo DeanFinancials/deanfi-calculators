@@ -92,6 +92,33 @@ export {
   yearsToReachNetWorth
 } from './investment/netWorth.js';
 
+// CD (Certificate of Deposit) Calculator
+export {
+  type CDCompoundingFrequency,
+  type CDTermMonths,
+  type CDInputs,
+  type CDMonthlyBreakdown,
+  type CDResult,
+  type CDLadderRung,
+  type CDLadderResult,
+  type EarlyWithdrawalResult,
+  type EarlyWithdrawalPenaltyType,
+  type EarlyWithdrawalPenalty,
+  type CDScenario,
+  type CDComparisonResult,
+  TYPICAL_PENALTIES,
+  TYPICAL_CD_RATES,
+  getCompoundingPeriodsPerYear,
+  apyToApr,
+  aprToApy,
+  calculateCD,
+  buildCDLadder,
+  calculateEarlyWithdrawal,
+  compareCDScenarios,
+  quickCDCalculation,
+  getTypicalPenalty
+} from './investment/cdCalculator.js';
+
 // Budget Calculators
 export {
   type SavingsGoalType,
