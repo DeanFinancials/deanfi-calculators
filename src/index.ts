@@ -66,6 +66,32 @@ export {
   compareCompoundInterestScenarios
 } from './investment/compoundInterest.js';
 
+export {
+  type AssetCategory,
+  type LiabilityCategory,
+  type FinancialHealthRating,
+  type AssetEntry,
+  type LiabilityEntry,
+  type AssetSummary,
+  type LiabilitySummary,
+  type NetWorthInputs,
+  type AssetAllocation,
+  type LiabilityAllocation,
+  type FinancialHealthMetrics,
+  type AgeBasedComparison,
+  type YearlyProjection,
+  type NetWorthResult,
+  ASSET_COLORS,
+  LIABILITY_COLORS,
+  ASSET_CATEGORY_NAMES,
+  LIABILITY_CATEGORY_NAMES,
+  calculateNetWorth,
+  quickNetWorth,
+  calculateTargetNetWorth,
+  getMedianNetWorthByAge,
+  yearsToReachNetWorth
+} from './investment/netWorth.js';
+
 // Budget Calculators
 export {
   type SavingsGoalType,
