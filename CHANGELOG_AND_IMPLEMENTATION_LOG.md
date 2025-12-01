@@ -10,12 +10,240 @@ This document tracks all changes, implementations, and design decisions for the 
 
 ## Table of Contents
 
+- [Version 1.3.0 - Net Worth Calculator](#version-130---2025-06-14)
 - [Version 1.2.1 - Budget Category & README Update](#version-121---2025-11-30)
 - [Version 1.2.0 - Savings Goal Calculator](#version-120---2025-11-30)
 - [Version 1.1.0 - Investment Calculator Module](#version-110---2025-01-xx)
 - [Version 1.0.1 - ESM Import Path Fix](#version-101---2025-11-21)
 - [Version 1.0.0 - Initial Publication](#version-100---2025-11-21)
 - [Pre-Publication Development](#pre-publication-development)
+
+---
+
+## Version 1.3.0 - 2025-06-14
+
+**Type:** New Feature (MINOR)  
+**Status:** Published  
+**npm:** @deanfinancials/calculators@1.3.0
+
+### Overview
+
+Added comprehensive Net Worth Calculator to the investment module. This calculator computes total assets minus liabilities, provides financial health scoring, age-based comparisons, net worth projections, and detailed breakdowns of asset allocation and liability categories.
+
+### New Files Created
+
+**src/investment/netWorth.ts:**
+
+Complete net worth calculator with the following exports:
+
+**Types:**
+- `NetWorthAssets` - Interface for all asset categories (cash, investments, retirement, real estate, vehicles, personal property, business equity, other)
+- `NetWorthLiabilities` - Interface for all liability categories (mortgage, home equity loans, auto loans, student loans, credit cards, personal loans, medical debt, other)
+- `FinancialHealthIndicators` - Interface for health scoring indicators
+- `NetWorthBenchmark` - Interface for age-based wealth percentile benchmarks
+- `NetWorthProjectionYear` - Interface for year-by-year net worth projections
+- `NetWorthResult` - Complete result interface with all calculation outputs
+
+**Functions:**
+- `calculateNetWorth(assets, liabilities, age?, annualIncome?)` - Main calculation function returning comprehensive net worth analysis
+- `getNetWorthBenchmarks(age?)` - Returns age-based wealth percentile benchmarks from Federal Reserve SCF data
+- `calculateNetWorthProjection(netWorth, savingsRate, returnRate, years)` - Projects future net worth growth over specified years
+- `getFinancialHealthScore(netWorth, assets, liabilities, age?, annualIncome?)` - Returns 0-100 health score with grade and recommendations
+
+**Features:**
+- Complete asset categorization (8 categories)
+- Complete liability categorization (8 categories)
+- Asset allocation percentages by category
+- Liability breakdown percentages by category
+- Debt-to-asset ratio calculations
+- Liquidity ratio analysis
+- Real estate equity calculations
+- Investment diversification scoring
+- Age-based wealth percentile comparisons (25th, 50th, 75th, 90th percentiles)
+- Net worth projections with configurable savings and return rates
+- Financial health scoring (A+ to F grades)
+- Personalized recommendations based on financial situation
+- Handles edge cases (zero liabilities, missing optional inputs, etc.)
+
+### Files Modified
+
+**src/index.ts:**
+Added exports for net worth calculator:
+
+```typescript
+// Net Worth Calculator
+export {
+  type NetWorthAssets,
+  type NetWorthLiabilities,
+  type FinancialHealthIndicators,
+  type NetWorthBenchmark,
+  type NetWorthProjectionYear,
+  type NetWorthResult,
+  calculateNetWorth,
+  getNetWorthBenchmarks,
+  calculateNetWorthProjection,
+  getFinancialHealthScore
+} from './investment/netWorth.js';
+```
+
+### Usage Example
+
+```typescript
+import { 
+  calculateNetWorth,
+  getNetWorthBenchmarks,
+  calculateNetWorthProjection,
+  getFinancialHealthScore
+} from '@deanfinancials/calculators';
+
+// Define assets
+const assets = {
+  cash: {
+    checking: 5000,
+    savings: 15000,
+    moneyMarket: 10000,
+    certificates: 0,
+    other: 0
+  },
+  investments: {
+    stocks: 50000,
+    bonds: 20000,
+    mutualFunds: 30000,
+    etfs: 25000,
+    crypto: 5000,
+    other: 0
+  },
+  retirement: {
+    traditional401k: 150000,
+    roth401k: 0,
+    traditionalIRA: 25000,
+    rothIRA: 35000,
+    pension: 0,
+    other: 0
+  },
+  realEstate: {
+    primaryHome: 450000,
+    rentalProperties: 0,
+    land: 0,
+    other: 0
+  },
+  vehicles: {
+    cars: 35000,
+    motorcycles: 0,
+    boats: 0,
+    other: 0
+  },
+  personalProperty: {
+    jewelry: 5000,
+    collectibles: 2000,
+    furniture: 10000,
+    electronics: 3000,
+    other: 0
+  },
+  businessEquity: {
+    ownership: 0,
+    partnerships: 0,
+    other: 0
+  },
+  otherAssets: 0
+};
+
+// Define liabilities
+const liabilities = {
+  mortgage: {
+    primaryHome: 280000,
+    rentalProperties: 0,
+    other: 0
+  },
+  homeEquityLoans: {
+    heloc: 0,
+    homeEquityLoan: 0
+  },
+  autoLoans: {
+    cars: 12000,
+    motorcycles: 0,
+    other: 0
+  },
+  studentLoans: {
+    federal: 25000,
+    private: 0
+  },
+  creditCards: {
+    total: 3500
+  },
+  personalLoans: {
+    secured: 0,
+    unsecured: 0
+  },
+  medicalDebt: 0,
+  otherLiabilities: 0
+};
+
+// Calculate net worth
+const result = calculateNetWorth(assets, liabilities, 35, 85000);
+
+console.log(result.netWorth);              // Total net worth
+console.log(result.totalAssets);           // Total assets
+console.log(result.totalLiabilities);      // Total liabilities
+console.log(result.debtToAssetRatio);      // Debt ratio
+console.log(result.assetAllocation);       // Asset breakdown percentages
+console.log(result.liabilityBreakdown);    // Liability breakdown percentages
+console.log(result.financialHealth);       // Health indicators
+console.log(result.ageComparison);         // Age-based percentile comparison
+
+// Get benchmarks for age
+const benchmarks = getNetWorthBenchmarks(35);
+console.log(benchmarks);                   // Percentile benchmarks
+
+// Project future growth
+const projection = calculateNetWorthProjection(result.netWorth, 15000, 0.07, 20);
+console.log(projection);                   // Year-by-year projections
+
+// Get health score
+const healthScore = getFinancialHealthScore(
+  result.netWorth, 
+  assets, 
+  liabilities, 
+  35, 
+  85000
+);
+console.log(healthScore.score);            // 0-100 score
+console.log(healthScore.grade);            // A+ to F grade
+console.log(healthScore.recommendations);  // Actionable recommendations
+```
+
+### Competitor Analysis
+
+Before implementation, analyzed leading net worth calculators:
+- **NerdWallet:** Focuses on simple asset/liability totals with education
+- **SmartAsset:** Emphasizes retirement-focused breakdowns
+- **Investor.gov:** Government tool with basic categories
+
+Our implementation improves on competitors with:
+- More granular asset/liability categories
+- Age-based percentile comparisons from Federal Reserve data
+- Financial health scoring with letter grades
+- Net worth projections
+- Actionable recommendations
+- Visual-ready data structures for charts
+
+### Testing
+
+Tested with deanfi-website NetWorthCalculator component:
+- All asset categories calculating correctly
+- All liability categories calculating correctly
+- Asset allocation percentages sum to 100%
+- Liability breakdown percentages sum to 100%
+- Age comparison showing correct percentile positioning
+- Financial health score returning appropriate grades
+- Projections showing realistic growth curves
+- Edge cases handled (zero liabilities, missing age, etc.)
+
+### Related Website Implementation
+
+This calculator logic is used by the Net Worth Calculator on deanfi-website:
+- Page: `/investment/net-worth`
+- Component: `src/components/calculators/NetWorthCalculator.tsx`
 
 ---
 

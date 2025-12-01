@@ -334,6 +334,90 @@ Effective Annual Rate: EAR = (1 + r/n)^n - 1
 Rule of 72: Years to Double ≈ 72 / rate
 ```
 
+#### 11. Net Worth Calculator
+Calculate total net worth with comprehensive asset and liability tracking, financial health scoring, and age-based wealth percentile comparisons.
+
+```typescript
+import { 
+  calculateNetWorth,
+  type Asset,
+  type Liability,
+  type NetWorthInput
+} from '@deanfinancials/calculators';
+
+// Define assets
+const assets: Asset[] = [
+  { category: 'cash', balance: 25000 },
+  { category: 'investments', balance: 150000 },
+  { category: 'retirement', balance: 350000 },
+  { category: 'realEstate', balance: 450000 },
+  { category: 'vehicles', balance: 35000 },
+  { category: 'personalProperty', balance: 20000 },
+  { category: 'businessEquity', balance: 0 },
+  { category: 'other', balance: 10000 }
+];
+
+// Define liabilities
+const liabilities: Liability[] = [
+  { category: 'mortgage', balance: 280000 },
+  { category: 'autoLoans', balance: 18000 },
+  { category: 'studentLoans', balance: 45000 },
+  { category: 'creditCards', balance: 5000 },
+  { category: 'personalLoans', balance: 0 },
+  { category: 'homeEquityLoans', balance: 0 },
+  { category: 'medicalDebt', balance: 2000 },
+  { category: 'other', balance: 0 }
+];
+
+// Calculate net worth with optional age and income for percentile comparison
+const result = calculateNetWorth({
+  assets,
+  liabilities,
+  age: 45,
+  annualIncome: 120000,
+  monthlySavingsRate: 2500,
+  expectedReturnRate: 7
+});
+
+console.log(result.netWorth);              // Total net worth
+console.log(result.totalAssets);           // Sum of all assets
+console.log(result.totalLiabilities);      // Sum of all liabilities
+console.log(result.liquidAssets);          // Cash + Investments
+console.log(result.illiquidAssets);        // Real estate, vehicles, etc.
+console.log(result.debtToAssetRatio);      // Liabilities / Assets
+console.log(result.assetAllocation);       // Breakdown by category with percentages
+console.log(result.liabilityAllocation);   // Breakdown by category with percentages
+
+// Financial health score (0-100 with letter grade)
+console.log(result.financialHealth.score);        // 0-100
+console.log(result.financialHealth.grade);        // A+, A, A-, B+, B, B-, C+, C, C-, D, F
+console.log(result.financialHealth.rating);       // excellent, good, fair, poor, critical
+console.log(result.financialHealth.recommendations); // Array of improvement suggestions
+
+// Age-based wealth comparison (if age provided)
+console.log(result.wealthPercentile?.percentile);   // e.g., 72 (72nd percentile)
+console.log(result.wealthPercentile?.comparison);   // "above average", "below average", etc.
+console.log(result.wealthPercentile?.medianWealth); // Median for age group
+console.log(result.wealthPercentile?.avgWealth);    // Average for age group
+
+// 10-year projections (if savings rate and return rate provided)
+console.log(result.projections);           // Array of year-by-year projections
+// Each projection: { year, projectedAssets, projectedLiabilities, projectedNetWorth }
+```
+
+**Asset Categories**: `cash`, `investments`, `retirement`, `realEstate`, `vehicles`, `personalProperty`, `businessEquity`, `other`
+
+**Liability Categories**: `mortgage`, `homeEquityLoans`, `autoLoans`, `studentLoans`, `creditCards`, `personalLoans`, `medicalDebt`, `other`
+
+**Financial Health Grades**:
+- **A+ to A-**: Excellent (score 90-100, 80-89, 75-79)
+- **B+ to B-**: Good (score 70-74, 65-69, 60-64)
+- **C+ to C-**: Fair (score 55-59, 50-54, 45-49)
+- **D**: Poor (score 40-44)
+- **F**: Critical (score below 40)
+
+**Wealth Percentile Data**: Based on Federal Reserve Survey of Consumer Finances (SCF) age-bracketed data
+
 ### Budget
 
 #### 11. Savings Goal Calculator
