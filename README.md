@@ -334,7 +334,103 @@ Effective Annual Rate: EAR = (1 + r/n)^n - 1
 Rule of 72: Years to Double ≈ 72 / rate
 ```
 
-#### 11. Net Worth Calculator
+#### 12. CD Calculator (Certificate of Deposit)
+Calculate CD returns, build CD ladders, estimate early withdrawal penalties, and compare multiple CD options.
+
+```typescript
+import { 
+  calculateCD,
+  buildCDLadder,
+  calculateEarlyWithdrawal,
+  compareCDScenarios,
+  type CDInputs,
+  type CDResult,
+  type CDLadderResult,
+  type EarlyWithdrawalResult,
+  type CDComparisonResult,
+  type CDCompoundingFrequency,
+  TYPICAL_CD_RATES,
+  TYPICAL_PENALTIES
+} from '@deanfinancials/calculators';
+
+// Calculate a single CD
+const cdResult = calculateCD({
+  principal: 10000,
+  apy: 0.05,              // 5% as decimal
+  termMonths: 12,
+  compoundingFrequency: 'daily',
+  federalTaxRate: 0.22,   // Optional: for after-tax calculations
+  stateTaxRate: 0.05,     // Optional: for after-tax calculations
+  inflationRate: 0.03     // Optional: for real return calculations
+});
+
+console.log(cdResult.maturityValue);      // Final balance at maturity
+console.log(cdResult.totalInterest);      // Total interest earned
+console.log(cdResult.effectiveAnnualRate); // Actual annual rate with compounding
+console.log(cdResult.monthlyBreakdown);   // Month-by-month growth
+console.log(cdResult.afterTaxInterest);   // Interest after taxes (if tax rates provided)
+console.log(cdResult.realReturn);         // Inflation-adjusted return (if inflation provided)
+
+// Build a CD ladder
+const ladder = buildCDLadder(
+  50000,    // Total investment
+  5,        // Number of rungs (CDs)
+  60,       // Maximum term in months (5 years)
+  TYPICAL_CD_RATES  // Rate schedule by term
+);
+
+console.log(ladder.rungs);                // Individual CDs with terms and rates
+console.log(ladder.totalMaturityValue);   // Combined maturity value
+console.log(ladder.totalInterest);        // Total interest across all CDs
+console.log(ladder.weightedAverageAPY);   // Average rate weighted by amount
+console.log(ladder.liquiditySchedule);    // When funds become available
+
+// Calculate early withdrawal penalty
+const earlyWithdrawal = calculateEarlyWithdrawal(
+  { principal: 10000, apy: 0.05, termMonths: 24, compoundingFrequency: 'daily' },
+  6,   // Months held before withdrawal
+  { type: 'months-interest', value: 6 }  // 6 months interest penalty
+);
+
+console.log(earlyWithdrawal.valueAtWithdrawal);  // Value before penalty
+console.log(earlyWithdrawal.penaltyAmount);      // Dollar amount of penalty
+console.log(earlyWithdrawal.netAmount);          // What you receive
+console.log(earlyWithdrawal.principalLoss);      // Boolean: did you lose principal?
+console.log(earlyWithdrawal.effectiveYield);     // Actual yield achieved
+
+// Compare multiple CD options
+const comparison = compareCDScenarios([
+  { label: 'Online Bank', inputs: { principal: 10000, apy: 0.052, termMonths: 12, compoundingFrequency: 'daily' } },
+  { label: 'Credit Union', inputs: { principal: 10000, apy: 0.048, termMonths: 12, compoundingFrequency: 'monthly' } },
+  { label: 'Local Bank', inputs: { principal: 10000, apy: 0.045, termMonths: 12, compoundingFrequency: 'quarterly' } }
+]);
+
+console.log(comparison.scenarios);        // Full results for each option
+console.log(comparison.bestByInterest);   // Index of best CD by interest earned
+console.log(comparison.bestByYield);      // Index of best CD by effective yield
+console.log(comparison.interestDifference); // Difference between best and worst
+```
+
+**Compounding Frequencies**: `daily`, `monthly`, `quarterly`, `semi-annually`, `annually`
+
+**Early Withdrawal Penalty Types**:
+- `days-simple`: X days of simple interest (typical for short-term CDs)
+- `months-interest`: X months of interest (most common)
+- `percent-interest`: X% of earned interest
+- `custom`: Custom dollar amount
+
+**Typical Penalties by Term** (included as `TYPICAL_PENALTIES` constant):
+| Term | Typical Penalty |
+|------|-----------------|
+| 3-6 months | 90 days interest |
+| 12-18 months | 3 months interest |
+| 24-36 months | 6 months interest |
+| 48-60 months | 12 months interest |
+
+**Typical CD Rates** (included as `TYPICAL_CD_RATES` constant):
+Provides low, average, and high rates for each standard term (1, 3, 6, 9, 12, 18, 24, 36, 48, 60 months).
+
+#### 13. Net Worth Calculator
 Calculate total net worth with comprehensive asset and liability tracking, financial health scoring, and age-based wealth percentile comparisons.
 
 ```typescript
@@ -420,7 +516,7 @@ console.log(result.projections);           // Array of year-by-year projections
 
 ### Budget
 
-#### 11. Savings Goal Calculator
+#### 14. Savings Goal Calculator
 Calculate how much to save monthly to reach any financial goal with milestone tracking.
 
 ```typescript
