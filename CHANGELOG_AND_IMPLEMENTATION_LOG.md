@@ -10,6 +10,7 @@ This document tracks all changes, implementations, and design decisions for the 
 
 ## Table of Contents
 
+- [Version 1.8.0 - Home Affordability Calculator](#version-180---2025-06-xx)
 - [Version 1.7.0 - 50/30/20 Budget Calculator](#version-170---2025-01-xx)
 - [Version 1.6.0 - RMD Calculator](#version-160---2025-06-21)
 - [Version 1.5.0 - Emergency Fund Calculator](#version-150---2025-12-03)
@@ -21,6 +22,203 @@ This document tracks all changes, implementations, and design decisions for the 
 - [Version 1.0.1 - ESM Import Path Fix](#version-101---2025-11-21)
 - [Version 1.0.0 - Initial Publication](#version-100---2025-11-21)
 - [Pre-Publication Development](#pre-publication-development)
+
+---
+
+## Version 1.8.0 - 2025-06-XX
+
+**Type:** New Feature (MINOR)  
+**Status:** Ready for publish  
+**npm:** @deanfinancials/calculators@1.8.0
+
+### Overview
+
+Added comprehensive Home Affordability Calculator to the budget module. This calculator helps users answer "How much house can I afford?" by analyzing income, debts, down payment, and loan options. Features include DTI analysis (28/36 rule), PMI calculation, multiple loan type comparison (Conventional, FHA, VA), affordability comfort zones, rate stress testing, and detailed monthly payment breakdowns.
+
+### New Files Created
+
+**src/budget/homeAffordability.ts:**
+
+Complete home affordability calculator with the following exports:
+
+**Types:**
+- `LoanType` - Union type: 'conventional' | 'fha' | 'va' | 'usda'
+- `LoanTermYears` - Union type: 15 | 20 | 30
+- `ComfortLevel` - Union type: 'comfortable' | 'moderate' | 'stretch' | 'risky'
+- `HomeAffordabilityInputs` - Complete input interface (income, debts, down payment, rate, loan type, etc.)
+- `MonthlyPaymentBreakdown` - Interface for P&I, taxes, insurance, PMI, HOA breakdown
+- `DTIAnalysis` - Interface for front-end/back-end DTI ratios and status
+- `LoanComparison` - Interface for comparing loan types (conventional, FHA, VA)
+- `StressTestScenario` - Interface for rate increase stress testing
+- `AffordabilityZone` - Interface for comfort level zones with price ranges
+- `HomeAffordabilityResult` - Complete result interface with all calculation outputs
+
+**Constants:**
+- `DTI_LIMITS` - DTI limits by loan type (28/36 for conventional, 31/43 for FHA, 41/41 for VA)
+- `MIN_DOWN_PAYMENT` - Minimum down payment by loan type (3%, 3.5%, 0%)
+- `PMI_RATES` - PMI rate matrix based on down payment and credit score
+- `FHA_MIP` - FHA Mortgage Insurance Premium rates (upfront and annual)
+- `VA_FUNDING_FEE` - VA funding fee rates by down payment and usage
+- `ZONE_COLORS` - Color mapping for affordability zones visualization
+
+**Functions:**
+- `calculatePMI(loanAmount, homePrice, creditScore)` - Calculate monthly PMI based on LTV and credit
+- `calculateFHAMIP(loanAmount, homePrice, loanTermYears)` - Calculate FHA upfront and monthly MIP
+- `calculateMonthlyMortgagePayment(loanAmount, rate, years)` - Standard mortgage payment formula
+- `calculateMaxLoanFromPayment(targetPayment, rate, years)` - Reverse solve for max loan amount
+- `calculateHomeAffordability(inputs)` - Main calculation function returning comprehensive analysis
+- `quickAffordabilityEstimate(annualIncome, rate, downPaymentPercent)` - Quick estimate using 28% rule
+- `calculateDebtImpact(annualIncome, rate)` - Calculate home price impact per $100 monthly debt
+
+**Features:**
+- DTI ratio analysis with front-end (28%) and back-end (36%) ratios
+- Custom DTI limits for FHA (31/43), VA (41/41), USDA (29/41)
+- PMI calculation based on LTV and credit score tiers
+- FHA MIP calculation (1.75% upfront + annual rate)
+- VA funding fee support
+- Property tax and homeowners insurance estimates
+- HOA dues inclusion
+- Affordability comfort zones (comfortable to risky)
+- Loan type comparison (Conventional vs FHA vs VA)
+- Rate stress testing (+0.5%, +1%, +1.5%, +2%)
+- Closing costs estimation (3% default)
+- Total cash needed calculation (down payment + closing costs)
+- Effective mortgage rate (including PMI impact)
+- Personalized recommendations and warnings
+- Iterative solver for max home price calculation
+
+### Files Modified
+
+**src/index.ts:**
+Added exports for home affordability calculator:
+
+```typescript
+// Home Affordability Calculator
+export {
+  type LoanType,
+  type LoanTermYears,
+  type ComfortLevel,
+  type HomeAffordabilityInputs,
+  type MonthlyPaymentBreakdown,
+  type DTIAnalysis,
+  type LoanComparison,
+  type StressTestScenario,
+  type AffordabilityZone,
+  type HomeAffordabilityResult,
+  DTI_LIMITS,
+  MIN_DOWN_PAYMENT,
+  PMI_RATES,
+  FHA_MIP,
+  VA_FUNDING_FEE,
+  ZONE_COLORS,
+  calculatePMI,
+  calculateFHAMIP,
+  calculateMonthlyMortgagePayment,
+  calculateMaxLoanFromPayment,
+  calculateHomeAffordability,
+  quickAffordabilityEstimate,
+  calculateDebtImpact
+} from './budget/homeAffordability.js';
+```
+
+### Calculation Methodology
+
+**28/36 Rule (Conventional Loans):**
+- Front-end DTI: Housing payment should not exceed 28% of gross monthly income
+- Back-end DTI: Total debt payments should not exceed 36% of gross monthly income
+
+**FHA Rules:**
+- Front-end DTI limit: 31%
+- Back-end DTI limit: 43%
+- Minimum down payment: 3.5%
+- MIP: 1.75% upfront + 0.85% annual for 30-year loans with LTV > 95%
+
+**VA Rules:**
+- No strict DTI limit (uses residual income), but 41% guideline
+- No down payment required
+- No monthly mortgage insurance
+- Funding fee applies (varies by usage and down payment)
+
+**PMI Calculation:**
+PMI rates vary based on:
+1. Down payment percentage tier (3-5%, 5-10%, 10-15%, 15-20%)
+2. Credit score tier (excellent 760+, good 700+, fair 640+, poor <640)
+- PMI cancels automatically at 80% LTV for conventional loans
+
+### Usage Example
+
+```typescript
+import { 
+  calculateHomeAffordability,
+  quickAffordabilityEstimate,
+  calculateDebtImpact,
+  DTI_LIMITS
+} from '@deanfinancials/calculators';
+
+// Full calculation
+const result = calculateHomeAffordability({
+  annualIncome: 100000,
+  monthlyDebts: 500,
+  downPayment: 60000,
+  interestRate: 0.065,
+  loanTermYears: 30,
+  loanType: 'conventional',
+  propertyTaxRate: 0.0125,
+  homeInsuranceRate: 0.0035,
+  monthlyHOA: 200,
+  creditScore: 740
+});
+
+console.log(result.maxHomePrice);           // Maximum affordable home price
+console.log(result.monthlyBreakdown);       // P&I, taxes, insurance, PMI, HOA
+console.log(result.dtiAnalysis);            // Front-end/back-end ratios
+console.log(result.affordabilityZones);     // Comfortable to risky zones
+console.log(result.loanComparisons);        // Conventional vs FHA vs VA
+console.log(result.stressTestScenarios);    // Rate increase impact
+console.log(result.recommendations);        // Personalized suggestions
+
+// Quick estimate
+const quickEstimate = quickAffordabilityEstimate(100000, 0.065, 0.2);
+console.log(quickEstimate);                 // ~$420,000
+
+// Debt impact
+const debtImpact = calculateDebtImpact(100000, 0.065);
+console.log(debtImpact);                    // Home price increase per $100/mo debt reduction
+```
+
+### Competitor Analysis
+
+Before implementation, analyzed leading home affordability calculators:
+- **NerdWallet:** Simple income/debt input with basic DTI
+- **Zillow:** Comprehensive but focuses on specific properties
+- **Bankrate:** Basic affordability with limited loan comparison
+- **Redfin:** Good UI but limited stress testing
+
+Our implementation improves on competitors with:
+- Affordability "comfort zones" (comfortable, moderate, stretch, risky)
+- Multiple loan type comparison side-by-side
+- Rate stress testing scenarios
+- Credit score-based PMI calculation
+- Detailed monthly payment breakdown
+- Personalized recommendations based on DTI status
+- Chart-ready data structures for visualization
+- Closing costs and total cash needed calculation
+- FHA MIP and VA funding fee support
+
+### Testing Required
+
+```bash
+npm run build
+# Verify dist/budget/homeAffordability.js exists
+# Verify exports in dist/index.js include home affordability calculator
+
+# Test locally with npm link
+npm link
+cd ../deanfi-website
+npm link @deanfinancials/calculators
+npm run dev
+# Visit /budget/home-affordability and test calculations
+```
 
 ---
 

@@ -205,3 +205,30 @@ export {
   projectSavings,
   suggestBudgetRule
 } from './budget/budgetCalculator.js';
+
+// Home Affordability Calculator
+export {
+  type LoanType,
+  type LoanTermYears,
+  type ComfortLevel,
+  type HomeAffordabilityInputs,
+  type MonthlyPaymentBreakdown,
+  type DTIAnalysis,
+  type LoanComparison,
+  type StressTestScenario,
+  type AffordabilityZone,
+  type HomeAffordabilityResult,
+  DTI_LIMITS,
+  MIN_DOWN_PAYMENT,
+  PMI_RATES,
+  FHA_MIP,
+  VA_FUNDING_FEE,
+  ZONE_COLORS,
+  calculatePMI,
+  calculateFHAMIP,
+  calculateMonthlyMortgagePayment,
+  calculateMaxLoanFromPayment,
+  calculateHomeAffordability,
+  quickAffordabilityEstimate,
+  calculateDebtImpact
+} from './budget/homeAffordability.js';

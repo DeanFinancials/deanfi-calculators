@@ -958,6 +958,143 @@ const bestRule = suggestBudgetRule(5000, 2800, true, false);  // 'high-cost-livi
 - Financial health scoring (0-100)
 - Category breakdown with subcategories
 
+#### 18. Home Affordability Calculator
+Calculate "how much house can I afford" based on income, debts, down payment, and loan options. Features DTI analysis, PMI calculation, loan type comparison, and affordability comfort zones.
+
+```typescript
+import { 
+  calculateHomeAffordability,
+  quickAffordabilityEstimate,
+  calculateDebtImpact,
+  calculatePMI,
+  calculateFHAMIP,
+  calculateMonthlyMortgagePayment,
+  type HomeAffordabilityInputs,
+  type HomeAffordabilityResult,
+  type LoanType,
+  type ComfortLevel,
+  DTI_LIMITS,
+  MIN_DOWN_PAYMENT,
+  ZONE_COLORS
+} from '@deanfinancials/calculators';
+
+// Full calculation with all parameters
+const result = calculateHomeAffordability({
+  annualIncome: 100000,
+  monthlyDebts: 500,
+  downPayment: 60000,
+  interestRate: 0.065,
+  loanTermYears: 30,
+  loanType: 'conventional',
+  propertyTaxRate: 0.0125,
+  homeInsuranceRate: 0.0035,
+  monthlyHOA: 200,
+  creditScore: 740,
+  includePMI: true
+});
+
+console.log(result.maxHomePrice);           // Maximum affordable home price
+console.log(result.loanAmount);             // Loan amount (price - down payment)
+console.log(result.downPaymentPercent);     // Down payment as percentage
+
+// Monthly payment breakdown
+console.log(result.monthlyBreakdown.principalAndInterest);  // P&I payment
+console.log(result.monthlyBreakdown.propertyTax);           // Monthly property tax
+console.log(result.monthlyBreakdown.homeInsurance);         // Monthly insurance
+console.log(result.monthlyBreakdown.pmi);                   // PMI (if applicable)
+console.log(result.monthlyBreakdown.hoa);                   // HOA dues
+console.log(result.monthlyBreakdown.totalHousing);          // Total PITI + HOA
+console.log(result.monthlyBreakdown.totalMonthly);          // Housing + other debts
+
+// DTI analysis
+console.log(result.dtiAnalysis.frontEndRatio);   // Housing payment / income (%)
+console.log(result.dtiAnalysis.backEndRatio);    // Total debts / income (%)
+console.log(result.dtiAnalysis.frontEndLimit);   // 28% for conventional
+console.log(result.dtiAnalysis.backEndLimit);    // 36% for conventional
+console.log(result.dtiAnalysis.status);          // 'excellent', 'good', 'acceptable', 'high', 'too-high'
+console.log(result.dtiAnalysis.message);         // Personalized DTI assessment
+
+// Affordability comfort zones
+console.log(result.affordabilityZones);          // Array of comfort zones
+// Each zone: { level: 'comfortable', minPrice: 0, maxPrice: 350000, 
+//              monthlyPayment: 2100, backEndDTI: 28, description: '...', color: '#10b981' }
+
+// Loan type comparison (Conventional vs FHA vs VA)
+console.log(result.loanComparisons);             // Array of loan comparisons
+// Each: { loanType, maxHomePrice, downPaymentRequired, monthlyPayment, 
+//         qualifies, benefits: string[], drawbacks: string[] }
+
+// Rate stress testing
+console.log(result.stressTestScenarios);         // Impact of rate increases
+// Each: { rate, rateIncrease, maxHomePrice, monthlyPayment, stillAffordable }
+
+// Cash needed
+console.log(result.estimatedClosingCosts);       // ~3% of home price
+console.log(result.totalCashNeeded);             // Down payment + closing costs
+console.log(result.effectiveRate);               // Interest rate + PMI impact
+
+// Recommendations and warnings
+console.log(result.recommendations);             // Personalized suggestions
+console.log(result.warnings);                    // Issues to address
+
+// Quick estimate (28% rule)
+const quickEstimate = quickAffordabilityEstimate(100000, 0.065, 0.2);
+console.log(quickEstimate);                      // ~$420,000
+
+// Debt impact analysis
+const debtImpact = calculateDebtImpact(100000, 0.065);
+console.log(debtImpact);                         // Home price increase per $100/mo debt reduction
+
+// PMI calculation
+const monthlyPMI = calculatePMI(320000, 400000, 740);  // For 80% LTV
+console.log(monthlyPMI);                         // Monthly PMI amount
+
+// FHA MIP calculation
+const fhaMIP = calculateFHAMIP(385000, 400000, 30);
+console.log(fhaMIP.upfront);                     // 1.75% upfront fee
+console.log(fhaMIP.monthly);                     // Monthly MIP
+
+// Calculate mortgage payment
+const payment = calculateMonthlyMortgagePayment(320000, 0.065, 30);
+console.log(payment);                            // Monthly P&I payment
+```
+
+**Loan Types**: `conventional`, `fha`, `va`, `usda`
+
+**Loan Term Years**: `15`, `20`, `30`
+
+**Comfort Levels**: `comfortable`, `moderate`, `stretch`, `risky`
+
+**DTI Limits by Loan Type**:
+| Loan Type | Front-End DTI | Back-End DTI | Min Down Payment |
+|-----------|---------------|--------------|------------------|
+| Conventional | 28% | 36% | 3% |
+| FHA | 31% | 43% | 3.5% |
+| VA | 41%* | 41%* | 0% |
+| USDA | 29% | 41% | 0% |
+
+*VA uses residual income, 41% is a guideline
+
+**PMI Calculation**: Based on LTV and credit score tiers
+- Excellent (760+): 0.19% - 0.55% annually
+- Good (700-759): 0.27% - 0.78% annually
+- Fair (640-699): 0.45% - 1.05% annually
+- Poor (<640): 0.65% - 1.35% annually
+
+**FHA MIP Rates**:
+- Upfront: 1.75% of loan amount
+- Annual: 0.45% - 0.85% depending on term and LTV
+
+**Features That Competitors Don't Have**:
+- Affordability "comfort zones" (comfortable to risky)
+- Loan type comparison side-by-side (Conventional vs FHA vs VA)
+- Rate stress testing scenarios (+0.5% to +2%)
+- Credit score-based PMI calculation
+- Detailed monthly payment breakdown (P&I, tax, insurance, PMI, HOA)
+- Total cash needed including closing costs
+- Personalized recommendations based on DTI status
+- Chart-ready data structures for visualization
+
 ## Formulas & Methodology
 
 All calculations use industry-standard formulas:
