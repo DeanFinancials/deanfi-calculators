@@ -10,6 +10,7 @@ This document tracks all changes, implementations, and design decisions for the 
 
 ## Table of Contents
 
+- [Version 1.8.1 - Home Affordability Bug Fix](#version-181---2025-12-02)
 - [Version 1.8.0 - Home Affordability Calculator](#version-180---2025-06-xx)
 - [Version 1.7.0 - 50/30/20 Budget Calculator](#version-170---2025-01-xx)
 - [Version 1.6.0 - RMD Calculator](#version-160---2025-06-21)
@@ -22,6 +23,51 @@ This document tracks all changes, implementations, and design decisions for the 
 - [Version 1.0.1 - ESM Import Path Fix](#version-101---2025-11-21)
 - [Version 1.0.0 - Initial Publication](#version-100---2025-11-21)
 - [Pre-Publication Development](#pre-publication-development)
+
+---
+
+## Version 1.8.1 - 2025-12-02
+
+**Type:** Bug Fix (PATCH)  
+**Status:** Published  
+**npm:** @deanfinancials/calculators@1.8.1
+
+### Overview
+
+Fixed critical infinite recursion bug in the Home Affordability Calculator that caused the browser to freeze when calculating results.
+
+### Bug Description
+
+The `calculateHomeAffordability()` function was calling `compareLoanTypes()` and `calculateStressTest()`, which in turn called `calculateHomeAffordability()` for each loan type and stress scenario, creating an infinite loop that caused a "Maximum call stack size exceeded" error.
+
+### Fix Implementation
+
+Added an internal `_skipNestedCalculations` flag to the `HomeAffordabilityInputs` interface. When this flag is `true`, the function skips generating:
+- `affordabilityZones` (returns empty array)
+- `loanComparisons` (returns empty array)
+- `stressTestScenarios` (returns empty array)
+
+The `compareLoanTypes()` and `calculateStressTest()` helper functions now pass `_skipNestedCalculations: true` when calling `calculateHomeAffordability()`, preventing the recursive loop.
+
+### Files Modified
+
+**src/budget/homeAffordability.ts:**
+- Added `_skipNestedCalculations?: boolean` to `HomeAffordabilityInputs` interface (marked as `@internal`)
+- Updated `calculateHomeAffordability()` to conditionally skip nested calculations
+- Updated `compareLoanTypes()` to pass `_skipNestedCalculations: true`
+- Updated `calculateStressTest()` to pass `_skipNestedCalculations: true`
+
+### Testing
+
+Verified calculation works with test inputs:
+- Annual Income: $125,000
+- Monthly Debts: $500
+- Down Payment: $60,000
+- Interest Rate: 6.5%
+- Loan Term: 15 years
+- Loan Type: Conventional
+
+Result: Max Home Price $336,000, Monthly Payment $2,914.36
 
 ---
 
