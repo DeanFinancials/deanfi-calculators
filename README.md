@@ -591,6 +591,120 @@ const scenarios = compareSavingsScenarios([
 - Specialized calculators for emergency funds and down payments
 - Achievability warnings for difficult goals
 
+#### 15. Emergency Fund Calculator
+Calculate personalized emergency fund recommendations based on your risk profile, with savings plans and milestone tracking.
+
+```typescript
+import { 
+  calculateEmergencyFund,
+  quickEmergencyFund,
+  timeToEmergencyFund,
+  getRecommendedMonths,
+  type EmergencyFundInputs,
+  type EmergencyFundResult,
+  type ExpenseEntry,
+  type EmploymentType,
+  EXPENSE_CATEGORY_NAMES
+} from '@deanfinancials/calculators';
+
+// Full calculation with risk assessment
+const result = calculateEmergencyFund({
+  expenses: 4500,                        // Monthly essential expenses
+  currentSavings: 5000,                  // Current emergency fund balance
+  monthlyIncome: 7000,                   // After-tax income
+  employmentType: 'stable-employed',     // Employment stability
+  incomeSources: 1,                      // Number of income sources
+  dependents: 2,                         // Number of dependents
+  hasDisabilityInsurance: true,          // Has disability coverage
+  hasSeveranceProtection: false,         // Severance or union protections
+  expectedJobSearchMonths: 4,            // Months to find new job if laid off
+  monthlySavingsCapacity: 800            // How much can be saved monthly
+});
+
+console.log(result.monthlyExpenses);         // $4,500
+console.log(result.recommendedTarget);       // $27,000 (6 months based on risk)
+console.log(result.minimumTarget);           // $13,500 (3 months minimum)
+console.log(result.conservativeTarget);      // $40,500 (9 months conservative)
+console.log(result.currentCoverage);         // 1.11 months covered
+console.log(result.fundingGap);              // $22,000 still needed
+console.log(result.percentComplete);         // 18.5%
+
+// Risk assessment results
+console.log(result.riskAssessment.riskScore);        // 1-10 scale
+console.log(result.riskAssessment.riskLevel);        // 'low', 'moderate', 'high', 'very-high'
+console.log(result.riskAssessment.recommendedMonths); // 6 months
+console.log(result.riskAssessment.riskFactors);      // ['2 dependents to support', 'Single income']
+console.log(result.riskAssessment.protectiveFactors); // ['Disability insurance']
+
+// Milestones
+console.log(result.milestones);              // Progress milestones (1, 2, 3, 6, 9, 12 months)
+// Each milestone: { label, months, amount, weeksToReach, achieved, description }
+
+// Scenario comparisons
+console.log(result.scenarios);               // Compare 3, 6, 9, 12 month targets
+// Each scenario: { name, months, targetAmount, monthsToReach, weeklySavingsRequired, riskLevel }
+
+// Savings plan (month-by-month projection with HYSA interest)
+console.log(result.savingsPlan);             // Monthly progress to goal
+console.log(result.monthsToGoal);            // ~28 months at $800/month
+console.log(result.weeklySavingsFor12Months); // $423/week to reach goal in 1 year
+console.log(result.monthlySavingsFor12Months); // $1,833/month to reach goal in 1 year
+
+// Recommendations and warnings
+console.log(result.recommendations);         // Personalized advice array
+console.log(result.warnings);                // Warning messages if applicable
+
+// With itemized expenses for detailed breakdown
+const detailedResult = calculateEmergencyFund({
+  expenses: [
+    { category: 'housing', amount: 2000, description: 'Rent' },
+    { category: 'utilities', amount: 250, description: 'Electric, gas, internet' },
+    { category: 'food', amount: 600, description: 'Groceries' },
+    { category: 'transportation', amount: 400, description: 'Car payment + insurance' },
+    { category: 'insurance', amount: 300, description: 'Health insurance' },
+    { category: 'debt-payments', amount: 500, description: 'Student loans' },
+    { category: 'healthcare', amount: 100, description: 'Prescriptions' },
+    { category: 'childcare', amount: 350, description: 'Daycare' }
+  ],
+  currentSavings: 5000,
+  employmentType: 'variable-income',
+  dependents: 1
+});
+
+console.log(detailedResult.expenseBreakdown); // Breakdown by category
+
+// Quick calculation helpers
+const quickFund = quickEmergencyFund(4500, 6);  // $27,000
+const timeToReach = timeToEmergencyFund(27000, 5000, 800, 4.5);  // ~27 months
+const recommendedMonths = getRecommendedMonths(true, true, true); // 9 months
+```
+
+**Employment Types**: `stable-employed`, `variable-income`, `self-employed`, `government`, `high-risk-industry`, `retired`
+
+**Expense Categories**: `housing`, `utilities`, `food`, `transportation`, `insurance`, `debt-payments`, `healthcare`, `childcare`, `other-essential`
+
+**Risk Level Recommendations**:
+- **Low Risk** (score 1-3): 3 months minimum
+- **Moderate Risk** (score 4-5): 6 months recommended
+- **High Risk** (score 6-7): 9 months recommended
+- **Very High Risk** (score 8-10): 12 months recommended
+
+**Risk Factors Considered**:
+- Employment type and stability
+- Number of income sources in household
+- Number of dependents
+- Disability insurance coverage
+- Severance/job protections
+- Expected job search duration
+
+**Features That Competitors Don't Have**:
+- Risk-adjusted recommendations based on personal factors
+- Detailed expense category breakdown
+- Month-by-month savings plan with HYSA interest
+- Multiple scenario comparison (3/6/9/12 months)
+- Weekly and monthly savings requirements
+- Personalized recommendations based on your situation
+
 ## Formulas & Methodology
 
 All calculations use industry-standard formulas:

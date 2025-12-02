@@ -135,3 +135,22 @@ export {
   calculateDownPaymentGoal,
   compareSavingsScenarios
 } from './budget/savingsGoal.js';
+
+// Emergency Fund Calculator
+export {
+  type EmploymentType,
+  type ExpenseCategory,
+  type ExpenseEntry,
+  type EmergencyFundInputs,
+  type ExpenseBreakdown,
+  type FundMilestone,
+  type MonthlyProgress as EmergencyFundMonthlyProgress,
+  type FundScenario,
+  type RiskAssessment,
+  type EmergencyFundResult,
+  EXPENSE_CATEGORY_NAMES,
+  calculateEmergencyFund,
+  quickEmergencyFund,
+  timeToEmergencyFund,
+  getRecommendedMonths
+} from './budget/emergencyFund.js';
