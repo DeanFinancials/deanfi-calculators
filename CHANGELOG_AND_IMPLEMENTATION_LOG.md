@@ -10,6 +10,7 @@ This document tracks all changes, implementations, and design decisions for the 
 
 ## Table of Contents
 
+- [Version 1.6.0 - RMD Calculator](#version-160---2025-06-21)
 - [Version 1.5.0 - Emergency Fund Calculator](#version-150---2025-12-03)
 - [Version 1.4.0 - CD Calculator](#version-140---2025-12-01)
 - [Version 1.3.0 - Net Worth Calculator](#version-130---2025-06-14)
@@ -19,6 +20,105 @@ This document tracks all changes, implementations, and design decisions for the 
 - [Version 1.0.1 - ESM Import Path Fix](#version-101---2025-11-21)
 - [Version 1.0.0 - Initial Publication](#version-100---2025-11-21)
 - [Pre-Publication Development](#pre-publication-development)
+
+---
+
+## Version 1.6.0 - 2025-06-21
+
+**Type:** New Feature (MINOR)  
+**Status:** Published  
+**npm:** @deanfinancials/calculators@1.6.0
+
+### Overview
+
+Added comprehensive RMD (Required Minimum Distribution) Calculator to the retirement module. This calculator uses official IRS life expectancy tables to calculate annual RMDs from tax-deferred retirement accounts. Features include SECURE Act 2.0 compliance (age 73 starting in 2023), spouse beneficiary calculations using the Joint Life Table for spouses 10+ years younger, multi-year projections with account balance estimation, and QCD eligibility tracking.
+
+### New Files Created
+
+**src/retirement/rmdCalculator.ts:**
+
+Complete RMD calculator with official IRS tables and the following exports:
+
+**Types:**
+- `RMDInput` - Interface for calculator inputs (birthYear, accountBalance, calculationYear, spouseBirthYear optional)
+- `RMDResult` - Interface for calculation results including age, rmdAmount, effectiveTaxRate (percentage of balance), divisor, tableUsed, isFirstRMDYear, qcdEligible, rmdDeadline
+- `RMDProjection` - Interface for multi-year projections with year, age, beginningBalance, rmdAmount, endingBalance, cumulativeRMDs
+
+**Functions:**
+- `calculateRMD(input)` - Main calculation function using official IRS tables
+- `projectRMDs(input, years, expectedReturn)` - Project RMDs over multiple years with account growth
+- `getUniformLifetimeTable()` - Returns official IRS Uniform Lifetime Table (ages 72-120)
+- `getJointLifeTableDivisor(ownerAge, spouseAge)` - Returns Joint Life Table divisor for spouse beneficiaries 10+ years younger
+
+**Constants:**
+- `UNIFORM_LIFETIME_TABLE` - Complete IRS Uniform Lifetime Table object mapping ages 72-120 to divisors
+- `JOINT_LIFE_TABLE` - Complete IRS Joint Life Table for owner ages 72-89+ with spouse ages
+
+**Features:**
+- Official IRS Uniform Lifetime Table (used for most account owners)
+- Official IRS Joint Life Table (used when spouse is sole beneficiary and 10+ years younger)
+- SECURE Act 2.0 compliance: RMD starting age 73 for those turning 72 after Dec 31, 2022
+- RMD starting age 75 planned for 2033 (future-proofed)
+- First RMD year detection with extended deadline (April 1 of following year)
+- QCD eligibility tracking (age 70.5+)
+- Multi-year projections with expected return modeling
+- Account balance depletion tracking
+- Cumulative RMD totals
+
+### Files Modified
+
+**src/index.ts:**
+Added exports for RMD calculator:
+
+```typescript
+// RMD Calculator
+export {
+  type RMDInput,
+  type RMDResult,
+  type RMDProjection,
+  calculateRMD,
+  projectRMDs,
+  getUniformLifetimeTable,
+  getJointLifeTableDivisor,
+  UNIFORM_LIFETIME_TABLE,
+  JOINT_LIFE_TABLE,
+} from './retirement/rmdCalculator.js';
+```
+
+**README.md:**
+Added comprehensive documentation for RMD Calculator including:
+- Calculator overview and IRS compliance details
+- Full API documentation with all types and functions
+- Code examples for single-year and multi-year calculations
+- Spouse beneficiary calculation examples
+- Reference links to official IRS publications
+
+**package.json:**
+- Bumped version from 1.5.0 to 1.6.0
+
+### IRS Tables Implemented
+
+**Uniform Lifetime Table (Table III):**
+- Ages 72-120 with corresponding divisors
+- Example divisors: Age 73 = 26.5, Age 75 = 24.6, Age 80 = 20.2, Age 90 = 12.2
+
+**Joint Life Table (Table II):**
+- Owner ages 72-89+ with spouse age combinations
+- Used only when spouse is sole beneficiary AND 10+ years younger
+- Provides longer divisors to reduce annual RMD amounts
+
+### SECURE Act 2.0 Rules Implemented
+
+1. RMD start age increased to 73 (effective Jan 1, 2023)
+2. RMD start age will increase to 75 (effective Jan 1, 2033)
+3. First-year RMD deadline: April 1 of year following first RMD year
+4. Subsequent RMD deadline: December 31 of each year
+
+### Documentation References
+
+- [IRS Publication 590-B](https://www.irs.gov/publications/p590b) - Distributions from Individual Retirement Arrangements
+- [IRS RMD Worksheets](https://www.irs.gov/retirement-plans/plan-participant-employee/required-minimum-distribution-worksheets)
+- [SECURE 2.0 Act Summary](https://www.irs.gov/retirement-plans/secure-20-act)
 
 ---
 
