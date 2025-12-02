@@ -12,6 +12,32 @@ export * from './retirement/withdrawalStrategy.js';
 export * from './retirement/socialSecurity.js';
 export * from './retirement/fourZeroOneKVsIRA.js';
 
+// RMD (Required Minimum Distribution) Calculator
+export {
+  type RetirementAccountType,
+  type RMDInputs,
+  type YearlyRMDProjection,
+  type RMDResult,
+  type MultiAccountRMDResult,
+  type TaxImpactEstimate,
+  type QCDAnalysis,
+  UNIFORM_LIFETIME_TABLE,
+  JOINT_LIFE_TABLE,
+  RMD_REQUIRED_ACCOUNTS,
+  RMD_EXEMPT_ACCOUNTS,
+  calculateAge,
+  getRMDStartAge,
+  getFirstRMDYear,
+  qualifiesForJointLifeTable,
+  getDistributionPeriod,
+  calculateSingleYearRMD,
+  formatRMDDeadline,
+  calculateRMD,
+  calculateMultipleAccountRMDs,
+  estimateRMDTaxImpact,
+  analyzeQCDOpportunity
+} from './retirement/rmdCalculator.js';
+
 // Debt Calculators
 export {
   type Debt,

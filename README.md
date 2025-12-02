@@ -134,9 +134,142 @@ console.log(comparison.rothIRA);
 - **401(k)**: Employer match available
 - **IRA**: No employer match
 
+#### 5. RMD Calculator (Required Minimum Distribution)
+Calculate required minimum distributions from retirement accounts using IRS life expectancy tables, with multi-year projections, spouse beneficiary rules, and tax impact analysis.
+
+```typescript
+import { 
+  calculateRMD,
+  calculateMultipleAccountRMDs,
+  estimateRMDTaxImpact,
+  analyzeQCDOpportunity,
+  getRMDStartAge,
+  type RMDInputs,
+  type RMDResult,
+  type YearlyRMDProjection,
+  UNIFORM_LIFETIME_TABLE,
+  JOINT_LIFE_TABLE
+} from '@deanfinancials/calculators';
+
+// Calculate RMD for a single account
+const result = calculateRMD({
+  birthYear: 1955,
+  accountBalance: 500000,
+  spouseBirthYear: 1970,              // Optional: spouse's birth year
+  spouseIsSoleBeneficiary: true,       // Optional: spouse is sole beneficiary
+  expectedReturnRate: 0.06,            // 6% expected return
+  projectionYears: 20,                 // Project 20 years forward
+  accountType: 'traditional_ira'       // Account type
+});
+
+console.log(result.currentRMD);              // Current year's required distribution
+console.log(result.distributionPeriod);       // Life expectancy factor used
+console.log(result.currentAge);               // Account holder's current age
+console.log(result.rmdStartAge);              // Age when RMDs begin (73 or 75)
+console.log(result.rmdStartYear);             // Year when RMDs begin
+console.log(result.rmdRequired);              // Whether RMDs are currently required
+console.log(result.yearsUntilRMD);            // Years until first RMD (0 if required)
+console.log(result.usingJointLifeTable);      // True if spouse >10 years younger
+console.log(result.firstRMDDeadline);         // "April 1, 2029" or similar
+console.log(result.rmdPercentage);            // RMD as % of balance
+console.log(result.penaltyRate);              // 25% penalty for missed RMDs
+console.log(result.warnings);                 // Important notices
+
+// Year-by-year projections
+console.log(result.projections);              // Array of YearlyRMDProjection
+// Each projection: { year, age, startBalance, rmd, distributionPeriod, 
+//                    rmdPercentage, endBalance, growth, isFirstRMDYear, deadline }
+console.log(result.totalProjectedRMDs);       // Sum of all projected RMDs
+console.log(result.totalProjectedGrowth);     // Sum of all projected growth
+console.log(result.finalProjectedBalance);    // Ending balance after projections
+
+// Calculate RMDs across multiple accounts
+const multiAccount = calculateMultipleAccountRMDs([
+  { birthYear: 1955, accountBalance: 300000, accountType: 'traditional_ira', accountLabel: 'Traditional IRA' },
+  { birthYear: 1955, accountBalance: 200000, accountType: '401k', accountLabel: 'Old 401(k)' }
+]);
+
+console.log(multiAccount.totalRMD);           // Combined RMD across all accounts
+console.log(multiAccount.totalBalance);       // Total balance across accounts
+console.log(multiAccount.accounts);           // Individual account results
+console.log(multiAccount.combinedProjections); // Aggregated year-by-year projections
+console.log(multiAccount.warnings);           // Including IRA aggregation note
+
+// Estimate tax impact of RMD
+const taxImpact = estimateRMDTaxImpact(
+  20000,          // RMD amount
+  50000,          // Other taxable income
+  'married_joint' // Filing status
+);
+
+console.log(taxImpact.federalTax);     // Estimated federal tax on RMD
+console.log(taxImpact.marginalRate);   // Your marginal tax bracket
+console.log(taxImpact.effectiveRate);  // Effective rate on RMD
+console.log(taxImpact.stateNote);      // Note about state taxes
+
+// Analyze QCD (Qualified Charitable Distribution) opportunity
+const qcdAnalysis = analyzeQCDOpportunity(
+  1952,           // Birth year (must be 70.5+)
+  25000,          // RMD amount
+  0.24            // Marginal tax rate
+);
+
+console.log(qcdAnalysis.qcdAvailable);        // Whether eligible for QCD
+console.log(qcdAnalysis.maxQCDAmount);        // $105,000 (2024 limit)
+console.log(qcdAnalysis.rmdSatisfiedByQCD);   // Amount of RMD covered by QCD
+console.log(qcdAnalysis.potentialTaxSavings); // Tax savings if RMD done as QCD
+console.log(qcdAnalysis.notes);               // QCD rules and requirements
+
+// Get RMD starting age based on birth year
+const startAge = getRMDStartAge(1955);        // 73 (born 1951-1959)
+const laterStartAge = getRMDStartAge(1965);   // 75 (born 1960+)
+```
+
+**Account Types Requiring RMDs**:
+- Traditional IRA, SEP IRA, SIMPLE IRA
+- 401(k), 403(b), 457(b)
+- Inherited IRA (10-year rule for most beneficiaries)
+- Inherited Roth IRA (10-year rule)
+
+**Accounts Exempt from RMDs**:
+- Roth IRA (during owner's lifetime)
+- Roth 401(k) (exempt starting 2024 per SECURE Act 2.0)
+
+**SECURE Act 2.0 RMD Age Rules**:
+| Birth Year | RMD Starting Age |
+|------------|------------------|
+| 1950 or earlier | 72 |
+| 1951-1959 | 73 |
+| 1960 or later | 75 |
+
+**Key Deadlines**:
+- **First RMD**: Due by April 1 of year after reaching RMD age
+- **Subsequent RMDs**: Due by December 31 of each year
+- **Penalty**: 25% excise tax (reduced to 10% if corrected within 2 years)
+
+**IRS Life Expectancy Tables**:
+- **Uniform Lifetime Table (Table III)**: Default for most account owners
+- **Joint Life Table (Table II)**: Used when spouse is sole beneficiary AND more than 10 years younger
+
+**QCD (Qualified Charitable Distribution) Benefits**:
+- Available at age 70½ (before RMD age)
+- Up to $105,000 per year (2024 limit)
+- Counts toward RMD but excluded from taxable income
+- Only applies to IRAs (not 401k/403b)
+
+**Features**:
+- Full IRS life expectancy tables (Uniform and Joint Life)
+- Spouse more than 10 years younger calculation
+- Multi-year projections with expected returns
+- Multi-account aggregation with IRA combination note
+- Tax impact estimation by filing status
+- QCD opportunity analysis
+- SECURE Act 2.0 compliant age rules
+- Penalty rate information
+
 ### Debt Management
 
-#### 5. Debt Payoff Strategy
+#### 6. Debt Payoff Strategy
 Compare avalanche (highest interest first) vs snowball (smallest balance first) methods.
 
 ```typescript
@@ -161,7 +294,7 @@ console.log(comparison.snowball); // Faster psychological wins
 - **Avalanche**: Target highest interest rate (saves most money)
 - **Snowball**: Target smallest balance (motivational wins)
 
-#### 6. Debt-to-Income Ratio
+#### 7. Debt-to-Income Ratio
 Calculate DTI for mortgage qualification.
 
 ```typescript
@@ -184,7 +317,7 @@ console.log(dti.rating); // excellent, good, fair, poor, concerning
 - **Fair**: ≤43% (FHA loan limit)
 - **Poor**: ≤50%
 
-#### 7. Credit Card Payoff
+#### 8. Credit Card Payoff
 Compare minimum payment vs fixed payment strategies.
 
 ```typescript
@@ -208,7 +341,7 @@ console.log(comparison.interestSavings);
 max(balance × percentage, floor amount)
 ```
 
-#### 8. Loan Calculator
+#### 9. Loan Calculator
 Calculate monthly payments and amortization schedule.
 
 ```typescript
@@ -239,7 +372,7 @@ r = Monthly interest rate
 n = Number of months
 ```
 
-#### 9. Mortgage Calculator
+#### 10. Mortgage Calculator
 Comprehensive mortgage calculator with P&I, taxes, insurance, PMI, and HOA.
 
 ```typescript
@@ -281,7 +414,7 @@ const affordable = calculateAffordableHome(
 
 ### Investment
 
-#### 10. Compound Interest Calculator
+#### 11. Compound Interest Calculator
 Calculate compound interest growth with various compounding frequencies and contribution timing.
 
 ```typescript
@@ -334,7 +467,7 @@ Effective Annual Rate: EAR = (1 + r/n)^n - 1
 Rule of 72: Years to Double ≈ 72 / rate
 ```
 
-#### 12. CD Calculator (Certificate of Deposit)
+#### 13. CD Calculator (Certificate of Deposit)
 Calculate CD returns, build CD ladders, estimate early withdrawal penalties, and compare multiple CD options.
 
 ```typescript
@@ -430,7 +563,7 @@ console.log(comparison.interestDifference); // Difference between best and worst
 **Typical CD Rates** (included as `TYPICAL_CD_RATES` constant):
 Provides low, average, and high rates for each standard term (1, 3, 6, 9, 12, 18, 24, 36, 48, 60 months).
 
-#### 13. Net Worth Calculator
+#### 14. Net Worth Calculator
 Calculate total net worth with comprehensive asset and liability tracking, financial health scoring, and age-based wealth percentile comparisons.
 
 ```typescript
@@ -516,7 +649,7 @@ console.log(result.projections);           // Array of year-by-year projections
 
 ### Budget
 
-#### 14. Savings Goal Calculator
+#### 15. Savings Goal Calculator
 Calculate how much to save monthly to reach any financial goal with milestone tracking.
 
 ```typescript
@@ -591,7 +724,7 @@ const scenarios = compareSavingsScenarios([
 - Specialized calculators for emergency funds and down payments
 - Achievability warnings for difficult goals
 
-#### 15. Emergency Fund Calculator
+#### 16. Emergency Fund Calculator
 Calculate personalized emergency fund recommendations based on your risk profile, with savings plans and milestone tracking.
 
 ```typescript
