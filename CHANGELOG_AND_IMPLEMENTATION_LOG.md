@@ -27,10 +27,10 @@ This document tracks all changes, implementations, and design decisions for the 
 
 ---
 
-## Version 1.9.0 - 2025-01-XX
+## Version 1.9.0 - 2025-01-27
 
 **Type:** New Feature (MINOR)  
-**Status:** Ready for publish  
+**Status:** Published  
 **npm:** @deanfinancials/calculators@1.9.0
 
 ### Overview
@@ -56,8 +56,8 @@ Complete paycheck calculator with the following exports:
 
 **Types:**
 - `PayType` - Union type: 'salary' | 'hourly'
-- `PayFrequency` - Union type: 'weekly' | 'biweekly' | 'semi-monthly' | 'monthly'
-- `FilingStatus` - Union type: 'single' | 'married' | 'married-separate' | 'head-of-household'
+- `PayFrequency` - Union type: 'weekly' | 'bi-weekly' | 'semi-monthly' | 'monthly'
+- `FilingStatus` - Union type: 'single' | 'married_jointly' | 'married_separately' | 'head_of_household'
 - `USState` - Union type for all 50 US states (2-letter codes)
 - `PreTaxDeductions` - Interface for pre-tax deduction types
 - `PostTaxDeductions` - Interface for post-tax deduction types
