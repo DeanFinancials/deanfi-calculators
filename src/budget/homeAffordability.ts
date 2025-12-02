@@ -85,6 +85,12 @@ export interface HomeAffordabilityInputs {
 
   /** Custom back-end DTI limit (default based on loan type) */
   customBackEndDTI?: number;
+
+  /**
+   * Internal flag - skip nested calculations (loan comparisons, stress tests)
+   * @internal
+   */
+  _skipNestedCalculations?: boolean;
 }
 
 /**
@@ -601,6 +607,7 @@ export function calculateHomeAffordability(
     includePMI = true,
     customFrontEndDTI,
     customBackEndDTI,
+    _skipNestedCalculations = false,
   } = inputs;
 
   const monthlyIncome = annualIncome / 12;
@@ -768,45 +775,51 @@ export function calculateHomeAffordability(
     message,
   };
 
-  // Calculate affordability zones
-  const affordabilityZones = calculateAffordabilityZones(
-    monthlyIncome,
-    monthlyDebts,
-    downPayment,
-    interestRate,
-    loanTermYears,
-    propertyTaxRate,
-    homeInsuranceRate,
-    monthlyHOA,
-    creditScore,
-    loanType
-  );
+  // Calculate affordability zones (skip if in nested call to prevent recursion)
+  const affordabilityZones = _skipNestedCalculations
+    ? []
+    : calculateAffordabilityZones(
+        monthlyIncome,
+        monthlyDebts,
+        downPayment,
+        interestRate,
+        loanTermYears,
+        propertyTaxRate,
+        homeInsuranceRate,
+        monthlyHOA,
+        creditScore,
+        loanType
+      );
 
-  // Calculate loan comparisons
-  const loanComparisons = compareLoanTypes(
-    annualIncome,
-    monthlyDebts,
-    downPayment,
-    interestRate,
-    loanTermYears,
-    propertyTaxRate,
-    homeInsuranceRate,
-    monthlyHOA,
-    creditScore
-  );
+  // Calculate loan comparisons (skip if in nested call to prevent recursion)
+  const loanComparisons = _skipNestedCalculations
+    ? []
+    : compareLoanTypes(
+        annualIncome,
+        monthlyDebts,
+        downPayment,
+        interestRate,
+        loanTermYears,
+        propertyTaxRate,
+        homeInsuranceRate,
+        monthlyHOA,
+        creditScore
+      );
 
-  // Stress test scenarios
-  const stressTestScenarios = calculateStressTest(
-    annualIncome,
-    monthlyDebts,
-    downPayment,
-    interestRate,
-    loanTermYears,
-    propertyTaxRate,
-    homeInsuranceRate,
-    monthlyHOA,
-    loanType
-  );
+  // Stress test scenarios (skip if in nested call to prevent recursion)
+  const stressTestScenarios = _skipNestedCalculations
+    ? []
+    : calculateStressTest(
+        annualIncome,
+        monthlyDebts,
+        downPayment,
+        interestRate,
+        loanTermYears,
+        propertyTaxRate,
+        homeInsuranceRate,
+        monthlyHOA,
+        loanType
+      );
 
   // Closing costs estimate (2-5% of home price)
   const estimatedClosingCosts = maxHomePrice * 0.03; // 3% estimate
@@ -1022,6 +1035,7 @@ function compareLoanTypes(
       homeInsuranceRate,
       monthlyHOA,
       creditScore,
+      _skipNestedCalculations: true, // Prevent infinite recursion
     });
 
     const benefits: string[] = [];
@@ -1097,6 +1111,7 @@ function calculateStressTest(
     propertyTaxRate,
     homeInsuranceRate,
     monthlyHOA,
+    _skipNestedCalculations: true, // Prevent infinite recursion
   });
 
   const baselineMaxPrice = baseline.maxHomePrice;
@@ -1114,6 +1129,7 @@ function calculateStressTest(
       propertyTaxRate,
       homeInsuranceRate,
       monthlyHOA,
+      _skipNestedCalculations: true, // Prevent infinite recursion
     });
 
     scenarios.push({
