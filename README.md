@@ -1095,6 +1095,207 @@ console.log(payment);                            // Monthly P&I payment
 - Personalized recommendations based on DTI status
 - Chart-ready data structures for visualization
 
+#### 19. Paycheck Calculator
+Calculate take-home pay after federal taxes, state taxes, FICA, and deductions. Features 2024/2025 tax brackets, all 50 US states, pre-tax and post-tax deductions, and state-by-state comparison.
+
+```typescript
+import { 
+  calculatePaycheck,
+  quickPaycheckEstimate,
+  hourlyToAnnual,
+  annualToHourly,
+  comparePaychecks,
+  compareStates,
+  getTaxBracketInfo,
+  type PaycheckInputs,
+  type PaycheckResult,
+  type PayType,
+  type PayFrequency,
+  type FilingStatus,
+  type USState,
+  type PreTaxDeductions,
+  type PostTaxDeductions,
+  FEDERAL_TAX_BRACKETS_2024,
+  FEDERAL_TAX_BRACKETS_2025,
+  STANDARD_DEDUCTIONS,
+  STATE_TAX_INFO
+} from '@deanfinancials/calculators';
+
+// Full paycheck calculation
+const result = calculatePaycheck({
+  payType: 'salary',
+  grossPay: 75000,                        // Annual salary
+  payFrequency: 'biweekly',               // Pay period
+  filingStatus: 'single',                 // Tax filing status
+  state: 'CA',                            // State for state tax
+  taxYear: 2024,                          // 2024 or 2025
+  federalAllowances: 1,                   // W-4 allowances (optional)
+  preTaxDeductions: {                     // Pre-tax deductions (optional)
+    retirement401k: 500,                  // Per paycheck
+    healthInsurance: 200,
+    hsaContribution: 100,
+    fsaContribution: 50,
+    dentalVision: 25,
+    commuter: 50,
+    other: 0
+  },
+  postTaxDeductions: {                    // Post-tax deductions (optional)
+    rothContribution: 100,
+    lifeInsurance: 25,
+    disabilityInsurance: 15,
+    unionDues: 0,
+    garnishments: 0,
+    charitableContributions: 50,
+    other: 0
+  },
+  ytdGrossIncome: 25000                   // Year-to-date (for SS cap, optional)
+});
+
+// Gross and net pay
+console.log(result.grossPayPerPeriod);         // $2,884.62 (biweekly)
+console.log(result.netPayPerPeriod);           // $1,862.34 (take-home)
+console.log(result.annualGrossPay);            // $75,000
+console.log(result.annualNetPay);              // $48,420.84
+console.log(result.effectiveTaxRate);          // 22.1%
+console.log(result.marginalFederalRate);       // 22%
+
+// Tax breakdown
+console.log(result.taxes.federal);             // Federal income tax
+console.log(result.taxes.state);               // State income tax
+console.log(result.taxes.socialSecurity);      // Social Security (6.2%)
+console.log(result.taxes.medicare);            // Medicare (1.45%)
+console.log(result.taxes.additionalMedicare);  // Additional Medicare (0.9% over threshold)
+console.log(result.taxes.totalFICA);           // Total FICA
+console.log(result.taxes.totalTaxes);          // All taxes combined
+
+// Deduction breakdown
+console.log(result.deductions.preTax);         // Pre-tax deductions total
+console.log(result.deductions.postTax);        // Post-tax deductions total
+console.log(result.deductions.total);          // All deductions
+
+// Annual projections
+console.log(result.annualTaxes.federal);       // Federal taxes per year
+console.log(result.annualTaxes.state);         // State taxes per year
+console.log(result.annualTaxes.fica);          // FICA taxes per year
+console.log(result.annualDeductions);          // Annual deductions
+console.log(result.taxableIncome);             // Taxable income after deductions
+
+// Tax bracket info
+console.log(result.federalBracket);            // Current federal bracket
+console.log(result.stateBracketInfo);          // State tax info
+
+// State-specific info
+console.log(result.stateInfo.name);            // "California"
+console.log(result.stateInfo.hasIncomeTax);    // true
+console.log(result.stateInfo.maxRate);         // 13.3%
+console.log(result.stateInfo.brackets);        // State tax brackets
+
+// Year-to-date tracking
+console.log(result.ytdGross);                  // YTD gross income
+console.log(result.ytdNet);                    // YTD net income
+console.log(result.ytdTaxes);                  // YTD taxes paid
+console.log(result.socialSecurityCapped);      // Whether SS is capped
+
+// Hourly calculation
+const hourlyResult = calculatePaycheck({
+  payType: 'hourly',
+  hourlyRate: 35,
+  hoursPerWeek: 40,
+  payFrequency: 'weekly',
+  filingStatus: 'married',
+  state: 'TX'
+});
+
+// Quick estimate (simplified)
+const quickEstimate = quickPaycheckEstimate(75000, 'single', 'CA');
+console.log(quickEstimate.estimatedNetAnnual);   // ~$55,000
+console.log(quickEstimate.estimatedNetMonthly);  // ~$4,580
+
+// Convert between hourly and salary
+const annual = hourlyToAnnual(35, 40);          // $72,800 (35/hr * 40hrs * 52weeks)
+const hourly = annualToHourly(75000, 40);       // $36.06/hr
+
+// Compare scenarios (e.g., before/after raise)
+const comparison = comparePaychecks(
+  { payType: 'salary', grossPay: 75000, payFrequency: 'biweekly', filingStatus: 'single', state: 'CA' },
+  { payType: 'salary', grossPay: 85000, payFrequency: 'biweekly', filingStatus: 'single', state: 'CA' }
+);
+console.log(comparison.grossDifference);        // $10,000 annual
+console.log(comparison.netDifference);          // ~$6,800 (after taxes)
+console.log(comparison.perPaycheckDifference);  // ~$262 per paycheck
+console.log(comparison.effectiveTaxOnRaise);    // ~32% (marginal tax on raise)
+
+// Compare states (for relocation decisions)
+const stateComparison = compareStates(
+  75000,
+  'single',
+  ['CA', 'TX', 'FL', 'NY', 'WA']
+);
+console.log(stateComparison);  // Array of results for each state
+// Each: { state, stateName, annualStateTax, annualNetPay, monthlyNetPay, ranking }
+
+// Get tax bracket information
+const bracketInfo = getTaxBracketInfo(75000, 'single', 2024);
+console.log(bracketInfo.currentBracket);        // 22%
+console.log(bracketInfo.incomeInBracket);       // Amount in current bracket
+console.log(bracketInfo.incomeToNextBracket);   // How much until next bracket
+console.log(bracketInfo.nextBracketRate);       // 24%
+```
+
+**Pay Types**: `salary`, `hourly`
+
+**Pay Frequencies**: `weekly`, `biweekly`, `semi-monthly`, `monthly`
+
+**Filing Statuses**: `single`, `married`, `married-separate`, `head-of-household`
+
+**Pre-Tax Deductions**:
+- `retirement401k` - 401(k) contributions
+- `healthInsurance` - Health insurance premiums
+- `hsaContribution` - Health Savings Account
+- `fsaContribution` - Flexible Spending Account
+- `dentalVision` - Dental/Vision insurance
+- `commuter` - Commuter benefits
+- `other` - Other pre-tax deductions
+
+**Post-Tax Deductions**:
+- `rothContribution` - Roth 401(k)/403(b)
+- `lifeInsurance` - Life insurance premiums
+- `disabilityInsurance` - Disability insurance
+- `unionDues` - Union membership dues
+- `garnishments` - Wage garnishments
+- `charitableContributions` - Payroll giving
+- `other` - Other post-tax deductions
+
+**2024 Federal Tax Brackets**:
+| Bracket | Single | Married Filing Jointly |
+|---------|--------|------------------------|
+| 10% | $0 - $11,600 | $0 - $23,200 |
+| 12% | $11,600 - $47,150 | $23,200 - $94,300 |
+| 22% | $47,150 - $100,525 | $94,300 - $201,050 |
+| 24% | $100,525 - $191,950 | $201,050 - $383,900 |
+| 32% | $191,950 - $243,725 | $383,900 - $487,450 |
+| 35% | $243,725 - $609,350 | $487,450 - $731,200 |
+| 37% | $609,350+ | $731,200+ |
+
+**FICA Rates (2024)**:
+- Social Security: 6.2% (capped at $168,600)
+- Medicare: 1.45% (no cap)
+- Additional Medicare: 0.9% (over $200,000 single / $250,000 married)
+
+**States with No Income Tax**: Alaska, Florida, Nevada, New Hampshire*, South Dakota, Tennessee*, Texas, Washington, Wyoming
+(*Limited taxes on investment income only)
+
+**Features That Competitors Don't Have**:
+- Complete 2024 and 2025 federal tax brackets
+- All 50 US states with accurate tax info
+- State comparison tool for relocation decisions
+- Scenario comparison (before/after raise)
+- Hourly-to-salary conversion utilities
+- Year-to-date tracking with Social Security cap
+- Detailed pre-tax and post-tax deduction handling
+- Marginal vs effective tax rate breakdown
+- Tax bracket information with income-to-next-bracket
+
 ## Formulas & Methodology
 
 All calculations use industry-standard formulas:

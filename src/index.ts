@@ -232,3 +232,35 @@ export {
   quickAffordabilityEstimate,
   calculateDebtImpact
 } from './budget/homeAffordability.js';
+
+// Paycheck Calculator
+export {
+  type PayType,
+  type PayFrequency,
+  type FilingStatus,
+  type USState,
+  type PreTaxDeductions,
+  type PostTaxDeductions,
+  type PaycheckInputs,
+  type TaxBreakdown,
+  type DeductionBreakdown,
+  type PaycheckComparison,
+  type PaycheckResult,
+  PAY_PERIODS_PER_YEAR,
+  FEDERAL_TAX_BRACKETS_2024,
+  FEDERAL_TAX_BRACKETS_2025,
+  STANDARD_DEDUCTIONS_2024,
+  STANDARD_DEDUCTIONS_2025,
+  FICA_2024,
+  FICA_2025,
+  STATE_TAX_INFO,
+  NO_INCOME_TAX_STATES,
+  STATE_NAMES,
+  calculatePaycheck,
+  quickPaycheckEstimate,
+  hourlyToAnnual,
+  annualToHourly,
+  comparePaychecks,
+  compareStates,
+  getTaxBracketInfo
+} from './budget/paycheckCalculator.js';

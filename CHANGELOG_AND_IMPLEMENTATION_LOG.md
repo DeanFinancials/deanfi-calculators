@@ -10,6 +10,7 @@ This document tracks all changes, implementations, and design decisions for the 
 
 ## Table of Contents
 
+- [Version 1.9.0 - Paycheck Calculator](#version-190---2025-01-xx)
 - [Version 1.8.1 - Home Affordability Bug Fix](#version-181---2025-12-02)
 - [Version 1.8.0 - Home Affordability Calculator](#version-180---2025-06-xx)
 - [Version 1.7.0 - 50/30/20 Budget Calculator](#version-170---2025-01-xx)
@@ -23,6 +24,112 @@ This document tracks all changes, implementations, and design decisions for the 
 - [Version 1.0.1 - ESM Import Path Fix](#version-101---2025-11-21)
 - [Version 1.0.0 - Initial Publication](#version-100---2025-11-21)
 - [Pre-Publication Development](#pre-publication-development)
+
+---
+
+## Version 1.9.0 - 2025-01-XX
+
+**Type:** New Feature (MINOR)  
+**Status:** Ready for publish  
+**npm:** @deanfinancials/calculators@1.9.0
+
+### Overview
+
+Added comprehensive Paycheck Calculator to the budget module. This calculator helps users estimate their take-home pay after federal taxes, state taxes, FICA (Social Security and Medicare), and various pre-tax and post-tax deductions. Features include 2024/2025 federal tax brackets, all 50 US states with accurate tax information, state-by-state comparison for relocation decisions, scenario comparison (before/after raise), hourly-to-salary conversion utilities, and detailed deduction handling.
+
+### Key Features
+
+1. **Federal Tax Calculation** - 2024 and 2025 tax brackets for all filing statuses (single, married, married-separate, head-of-household)
+2. **State Tax Calculation** - All 50 US states with accurate tax rates, including states with no income tax
+3. **FICA Calculation** - Social Security (6.2% up to wage base), Medicare (1.45%), Additional Medicare (0.9% over threshold)
+4. **Pre-Tax Deductions** - 401(k), health insurance, HSA, FSA, dental/vision, commuter benefits
+5. **Post-Tax Deductions** - Roth contributions, life insurance, disability insurance, union dues, garnishments, charitable contributions
+6. **Pay Type Support** - Both salary and hourly calculations with various pay frequencies
+7. **State Comparison** - Compare take-home pay across multiple states for relocation decisions
+8. **Scenario Comparison** - Compare before/after raise to see effective tax on raise
+
+### New Files Created
+
+**src/budget/paycheckCalculator.ts:**
+
+Complete paycheck calculator with the following exports:
+
+**Types:**
+- `PayType` - Union type: 'salary' | 'hourly'
+- `PayFrequency` - Union type: 'weekly' | 'biweekly' | 'semi-monthly' | 'monthly'
+- `FilingStatus` - Union type: 'single' | 'married' | 'married-separate' | 'head-of-household'
+- `USState` - Union type for all 50 US states (2-letter codes)
+- `PreTaxDeductions` - Interface for pre-tax deduction types
+- `PostTaxDeductions` - Interface for post-tax deduction types
+- `PaycheckInputs` - Complete input interface for paycheck calculation
+- `TaxBreakdown` - Interface for federal, state, FICA breakdown per period
+- `DeductionBreakdown` - Interface for pre-tax and post-tax deductions
+- `PaycheckComparison` - Interface for comparing two paycheck scenarios
+- `PaycheckResult` - Complete result interface with all calculation outputs
+
+**Constants:**
+- `FEDERAL_TAX_BRACKETS_2024` - 2024 federal tax brackets for all filing statuses
+- `FEDERAL_TAX_BRACKETS_2025` - 2025 federal tax brackets for all filing statuses
+- `STANDARD_DEDUCTIONS` - Standard deductions by filing status (2024/2025)
+- `SOCIAL_SECURITY_RATE` - 6.2%
+- `SOCIAL_SECURITY_WAGE_BASE_2024` - $168,600
+- `SOCIAL_SECURITY_WAGE_BASE_2025` - $176,100
+- `MEDICARE_RATE` - 1.45%
+- `ADDITIONAL_MEDICARE_RATE` - 0.9%
+- `ADDITIONAL_MEDICARE_THRESHOLD` - By filing status ($200k single, $250k married)
+- `STATE_TAX_INFO` - Complete tax info for all 50 states
+
+**Functions:**
+- `calculatePaycheck(inputs)` - Main function for full paycheck calculation
+- `quickPaycheckEstimate(annualSalary, filingStatus, state)` - Simplified estimation
+- `hourlyToAnnual(hourlyRate, hoursPerWeek)` - Convert hourly to annual salary
+- `annualToHourly(annualSalary, hoursPerWeek)` - Convert annual salary to hourly
+- `comparePaychecks(scenario1, scenario2)` - Compare two paycheck scenarios
+- `compareStates(annualSalary, filingStatus, states)` - Compare take-home across states
+- `getTaxBracketInfo(income, filingStatus, taxYear)` - Get current bracket info
+
+### Files Modified
+
+**src/index.ts:**
+- Added exports for all Paycheck Calculator types, constants, and functions with `.js` extension
+
+### Implementation Details
+
+#### Federal Tax Calculation
+Uses progressive tax brackets. Calculates tax by applying each bracket's rate to the income falling within that bracket's range.
+
+#### State Tax Calculation
+Supports three types of state taxes:
+1. **No Tax** - AK, FL, NV, NH, SD, TN, TX, WA, WY
+2. **Flat Rate** - CO (4.4%), IL (4.95%), IN (3.05%), KY (4.0%), MA (5.0%), MI (4.25%), NC (5.25%), PA (3.07%), UT (4.65%)
+3. **Progressive Brackets** - All other states with graduated rates
+
+#### FICA Calculation
+- Social Security: 6.2% up to wage base ($168,600 in 2024, $176,100 in 2025)
+- Medicare: 1.45% on all wages
+- Additional Medicare: 0.9% on wages over $200,000 (single) or $250,000 (married)
+- Tracks year-to-date earnings to properly cap Social Security
+
+#### Deduction Handling
+- Pre-tax deductions reduce taxable income (401k, health insurance, HSA, FSA)
+- Post-tax deductions are taken after tax calculation (Roth, life insurance, garnishments)
+- Standard deduction is applied for federal tax calculation
+
+### Documentation Links
+
+- IRS 2024 Tax Tables: https://www.irs.gov/pub/irs-pdf/p15t.pdf
+- IRS 2025 Tax Brackets: https://www.irs.gov/newsroom/irs-releases-tax-inflation-adjustments-for-tax-year-2025
+- FICA Rates: https://www.ssa.gov/oact/cola/cbb.html
+- State Tax Information: https://taxfoundation.org/data/all/state/state-income-tax-rates-2024/
+
+### Testing Notes
+
+Verified against SmartAsset and ADP paycheck calculators for accuracy across multiple scenarios including:
+- Single filer with $75,000 salary in California
+- Married filer with $125,000 salary in New York
+- Hourly worker at $35/hour in Texas (no state tax)
+- High earner over Social Security wage base
+- Scenarios with various pre-tax and post-tax deductions
 
 ---
 
