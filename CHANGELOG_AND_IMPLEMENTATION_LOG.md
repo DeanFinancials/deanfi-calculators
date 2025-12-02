@@ -10,6 +10,8 @@ This document tracks all changes, implementations, and design decisions for the 
 
 ## Table of Contents
 
+- [Version 1.5.0 - Emergency Fund Calculator](#version-150---2025-12-03)
+- [Version 1.4.0 - CD Calculator](#version-140---2025-12-01)
 - [Version 1.3.0 - Net Worth Calculator](#version-130---2025-06-14)
 - [Version 1.2.1 - Budget Category & README Update](#version-121---2025-11-30)
 - [Version 1.2.0 - Savings Goal Calculator](#version-120---2025-11-30)
@@ -17,6 +19,134 @@ This document tracks all changes, implementations, and design decisions for the 
 - [Version 1.0.1 - ESM Import Path Fix](#version-101---2025-11-21)
 - [Version 1.0.0 - Initial Publication](#version-100---2025-11-21)
 - [Pre-Publication Development](#pre-publication-development)
+
+---
+
+## Version 1.5.0 - 2025-12-03
+
+**Type:** New Feature (MINOR)  
+**Status:** Published  
+**npm:** @deanfinancials/calculators@1.5.0
+
+### Overview
+
+Added comprehensive Emergency Fund Calculator to the budget module. This calculator provides personalized emergency fund recommendations based on employment type, expenses, dependents, and other risk factors. Features include detailed expense breakdowns, savings timeline projections with HYSA interest, milestone tracking, and scenario comparison.
+
+### New Files Created
+
+**src/budget/emergencyFund.ts:**
+
+Complete emergency fund calculator with the following exports:
+
+**Types:**
+- `EmploymentType` - Union type for employment status ('w2_stable', 'w2_variable', 'self_employed', 'contract', 'retired', 'unemployed')
+- `ExpenseCategory` - Interface for detailed expense breakdown by category
+- `RiskAssessment` - Interface for personal risk factors affecting recommendation
+- `EmergencyFundInputs` - Complete input interface for the calculator
+- `FundMilestone` - Interface for savings milestones ($1,000 starter, 1/3/6 months, full goal)
+- `FundScenario` - Interface for scenario comparison (3/6/9/12 months)
+- `SavingsTimelinePoint` - Interface for monthly savings progression data points
+- `EmergencyFundResult` - Complete result interface with all calculation outputs
+
+**Functions:**
+- `calculateEmergencyFund(inputs)` - Main calculation function returning comprehensive analysis
+- `quickEmergencyFund(monthlyExpenses, months?)` - Quick calculation for simple use cases
+- `timeToEmergencyFund(target, monthlyContribution, currentSavings?, interestRate?)` - Calculate months to reach goal
+- `getRecommendedMonths(employmentType, dependents, hasMultipleIncomes, hasDisabilityInsurance)` - Get recommended months based on risk
+
+**Features:**
+- Risk-based month recommendations (3-12 months based on factors)
+- Detailed expense category input (housing, utilities, food, transportation, healthcare, insurance, debt, other)
+- Simple expense mode (single total amount)
+- Risk score calculation (1-10 scale)
+- Savings timeline with HYSA interest projection (default 4.5% APY)
+- Progress tracking (current amount toward goal)
+- Milestone tracking (starter fund through full goal)
+- Scenario comparison (3/6/9/12 month targets)
+- Monthly savings plan with realistic timeline
+- Handles edge cases (already funded, no monthly contribution, etc.)
+
+### Files Modified
+
+**src/index.ts:**
+Added exports for emergency fund calculator:
+
+```typescript
+// Emergency Fund Calculator
+export {
+  type EmploymentType,
+  type ExpenseCategory,
+  type RiskAssessment,
+  type EmergencyFundInputs,
+  type FundMilestone,
+  type FundScenario,
+  type SavingsTimelinePoint,
+  type EmergencyFundResult,
+  calculateEmergencyFund,
+  quickEmergencyFund,
+  timeToEmergencyFund,
+  getRecommendedMonths
+} from './budget/emergencyFund.js';
+```
+
+### Usage Example
+
+```typescript
+import { 
+  calculateEmergencyFund,
+  quickEmergencyFund,
+  getRecommendedMonths
+} from '@deanfinancials/calculators';
+
+// Full calculation with risk assessment
+const result = calculateEmergencyFund({
+  monthlyExpenses: 4500,
+  currentSavings: 5000,
+  monthlyContribution: 500,
+  riskAssessment: {
+    employmentType: 'w2_stable',
+    dependents: 2,
+    hasMultipleIncomes: true,
+    hasDisabilityInsurance: true
+  },
+  savingsInterestRate: 4.5
+});
+
+console.log(result.recommendedMonths);     // 4
+console.log(result.targetAmount);          // 18000
+console.log(result.monthsToGoal);          // 26
+console.log(result.riskScore);             // 4
+
+// Quick calculation
+const quickResult = quickEmergencyFund(4500, 6);
+console.log(quickResult.targetAmount);     // 27000
+```
+
+### Testing
+
+- All functions validated with various input combinations
+- Edge cases handled: zero expenses, already funded, no contribution, various employment types
+- Integration tested in deanfi-website with React component
+
+### Documentation
+
+README.md updated with:
+- Emergency Fund Calculator section in Quick Start Examples
+- Full API documentation for all types and functions
+- Usage examples for each function
+- Explanation of risk assessment factors
+
+---
+
+## Version 1.4.0 - 2025-12-01
+
+**Type:** New Feature (MINOR)  
+**Status:** Published  
+**npm:** @deanfinancials/calculators@1.4.0
+
+### Overview
+
+Added comprehensive CD Calculator to the investment module. Features include standard CD calculation, CD ladder building, early withdrawal penalty estimation, and CD comparison tools.
 
 ---
 
