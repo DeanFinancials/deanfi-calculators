@@ -180,3 +180,28 @@ export {
   timeToEmergencyFund,
   getRecommendedMonths
 } from './budget/emergencyFund.js';
+
+// 50/30/20 Budget Calculator
+export {
+  type BudgetCategory,
+  type NeedsSubcategory,
+  type WantsSubcategory,
+  type SavingsSubcategory,
+  type BudgetRule,
+  type ExpenseItem,
+  type CategoryBreakdown,
+  type BudgetInputs,
+  type RuleComparison,
+  type SavingsOptimization,
+  type BudgetHealthMetrics,
+  type AnnualProjection,
+  type BudgetResult,
+  BUDGET_RULES,
+  BUDGET_CATEGORY_COLORS,
+  SUBCATEGORY_NAMES,
+  calculateBudget,
+  quickBudget,
+  categoryBudget,
+  projectSavings,
+  suggestBudgetRule
+} from './budget/budgetCalculator.js';

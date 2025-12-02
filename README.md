@@ -838,6 +838,126 @@ const recommendedMonths = getRecommendedMonths(true, true, true); // 9 months
 - Weekly and monthly savings requirements
 - Personalized recommendations based on your situation
 
+#### 17. 50/30/20 Budget Calculator
+Calculate budget allocation based on the classic 50/30/20 rule and compare alternative budgeting strategies.
+
+```typescript
+import { 
+  calculateBudget,
+  quickBudget,
+  categoryBudget,
+  projectSavings,
+  suggestBudgetRule,
+  type BudgetInputs,
+  type BudgetResult,
+  type ExpenseItem,
+  type BudgetCategory,
+  BUDGET_RULES,
+  BUDGET_CATEGORY_COLORS,
+  SUBCATEGORY_NAMES
+} from '@deanfinancials/calculators';
+
+// Simple budget calculation
+const result = calculateBudget({
+  monthlyIncome: 5000
+});
+
+console.log(result.needs.target);          // $2,500 (50%)
+console.log(result.wants.target);          // $1,500 (30%)
+console.log(result.savings.target);        // $1,000 (20%)
+console.log(result.appliedRule.name);      // "50/30/20 Rule"
+
+// With expense tracking
+const trackedResult = calculateBudget({
+  monthlyIncome: 5000,
+  expenses: [
+    { description: 'Rent', amount: 1500, category: 'needs', subcategory: 'housing' },
+    { description: 'Utilities', amount: 200, category: 'needs', subcategory: 'utilities' },
+    { description: 'Groceries', amount: 400, category: 'needs', subcategory: 'groceries' },
+    { description: 'Netflix', amount: 15, category: 'wants', subcategory: 'subscriptions' },
+    { description: 'Dining', amount: 300, category: 'wants', subcategory: 'dining-out' },
+    { description: '401k', amount: 500, category: 'savings', subcategory: 'retirement' }
+  ]
+});
+
+console.log(trackedResult.needs.status);       // 'under', 'on-target', or 'over'
+console.log(trackedResult.wants.difference);   // Amount under/over budget
+console.log(trackedResult.savings.percentOfIncome); // Actual savings %
+console.log(trackedResult.healthMetrics.score); // Financial health score (0-100)
+
+// Compare different budget rules
+console.log(trackedResult.ruleComparisons);    // All rules compared for your situation
+console.log(trackedResult.recommendedRule);     // Best rule for your circumstances
+
+// Get optimization suggestions
+console.log(trackedResult.optimizations);       // Ways to improve your budget
+console.log(trackedResult.recommendations);     // Personalized tips
+console.log(trackedResult.warnings);            // Budget issues to address
+
+// Project savings growth over time
+console.log(trackedResult.annualProjections);   // 5-year wealth projection
+
+// Chart data for visualization
+console.log(trackedResult.chartData);           // Ready for pie chart rendering
+
+// Use alternative budget rules
+const aggressiveSaver = calculateBudget({
+  monthlyIncome: 5000,
+  budgetRule: 'aggressive-saver'              // 50/20/30 (prioritizes savings)
+});
+
+const highCostLiving = calculateBudget({
+  monthlyIncome: 5000,
+  budgetRule: 'high-cost-living',             // 60/20/20 (more for essentials)
+  isHighCostArea: true
+});
+
+// Custom percentages
+const custom = calculateBudget({
+  monthlyIncome: 5000,
+  customNeedsPercent: 55,
+  customWantsPercent: 25,
+  customSavingsPercent: 20
+});
+
+// Quick helpers
+const quick = quickBudget(5000);
+console.log(quick.needs);    // $2,500
+console.log(quick.wants);    // $1,500
+console.log(quick.savings);  // $1,000
+
+const housingBudget = categoryBudget(5000, 'needs');  // $2,500 for all needs
+const projectedWealth = projectSavings(1000, 10, 7);  // $173,085 after 10 years
+
+const bestRule = suggestBudgetRule(5000, 2800, true, false);  // 'high-cost-living'
+```
+
+**Budget Rules Available** (`BUDGET_RULES`):
+| Rule | Needs | Wants | Savings | Best For |
+|------|-------|-------|---------|----------|
+| `standard` | 50% | 30% | 20% | Most people with average cost of living |
+| `aggressive-saver` | 50% | 20% | 30% | FIRE/rapid wealth building |
+| `high-cost-living` | 60% | 20% | 20% | SF, NYC, Boston residents |
+| `debt-focused` | 50% | 20% | 30% | Aggressive debt payoff |
+| `minimalist` | 70% | 10% | 20% | Minimalists or high essential costs |
+| `paycheck-to-paycheck` | 80% | 10% | 10% | Starting financial journey |
+| `pay-yourself-first` | 55% | 25% | 20% | Those who struggle to save |
+
+**Needs Subcategories**: `housing`, `utilities`, `groceries`, `transportation`, `health-insurance`, `minimum-debt`, `childcare`, `other-essential`
+
+**Wants Subcategories**: `dining-out`, `entertainment`, `shopping`, `subscriptions`, `travel`, `personal-care`, `gifts`, `other-wants`
+
+**Savings Subcategories**: `emergency-fund`, `retirement`, `investments`, `extra-debt`, `sinking-funds`, `other-savings`
+
+**Features That Competitors Don't Have**:
+- Alternative rule comparison (60/20/20, 70/20/10, 80/10/10)
+- Personalized rule recommendation based on situation
+- Expense tracking with actual vs target analysis
+- Savings optimization suggestions
+- 5-year wealth projection with compound growth
+- Financial health scoring (0-100)
+- Category breakdown with subcategories
+
 ## Formulas & Methodology
 
 All calculations use industry-standard formulas:

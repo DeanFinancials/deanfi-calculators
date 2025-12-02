@@ -10,6 +10,7 @@ This document tracks all changes, implementations, and design decisions for the 
 
 ## Table of Contents
 
+- [Version 1.7.0 - 50/30/20 Budget Calculator](#version-170---2025-01-xx)
 - [Version 1.6.0 - RMD Calculator](#version-160---2025-06-21)
 - [Version 1.5.0 - Emergency Fund Calculator](#version-150---2025-12-03)
 - [Version 1.4.0 - CD Calculator](#version-140---2025-12-01)
@@ -20,6 +21,192 @@ This document tracks all changes, implementations, and design decisions for the 
 - [Version 1.0.1 - ESM Import Path Fix](#version-101---2025-11-21)
 - [Version 1.0.0 - Initial Publication](#version-100---2025-11-21)
 - [Pre-Publication Development](#pre-publication-development)
+
+---
+
+## Version 1.7.0 - 2025-01-XX
+
+**Type:** New Feature (MINOR)  
+**Status:** Ready for publish  
+**npm:** @deanfinancials/calculators@1.7.0
+
+### Overview
+
+Added comprehensive 50/30/20 Budget Calculator to the budget module. This calculator helps users allocate their after-tax income using the popular 50/30/20 budgeting rule, with support for alternative budget rules, expense tracking, savings optimization suggestions, and financial health scoring.
+
+### New Files Created
+
+**src/budget/budgetCalculator.ts:**
+
+Complete 50/30/20 budget calculator with the following exports:
+
+**Types:**
+- `BudgetCategory` - Union type: 'needs' | 'wants' | 'savings'
+- `NeedsSubcategory` - Union type for detailed needs tracking (housing, utilities, groceries, transportation, health-insurance, minimum-debt, childcare, other-essential)
+- `WantsSubcategory` - Union type for detailed wants tracking (dining-out, entertainment, shopping, subscriptions, travel, personal-care, gifts, other-wants)
+- `SavingsSubcategory` - Union type for detailed savings tracking (emergency-fund, retirement, investments, extra-debt, sinking-funds, other-savings)
+- `BudgetRule` - Interface for budget rule configuration (name, description, percentages, bestFor)
+- `ExpenseItem` - Interface for tracking individual expenses
+- `CategoryBreakdown` - Interface for category analysis (total, target, difference, status)
+- `BudgetInputs` - Complete input interface for the calculator
+- `RuleComparison` - Interface for comparing different budget rules
+- `SavingsOptimization` - Interface for savings improvement suggestions
+- `BudgetHealthMetrics` - Interface for financial health scoring
+- `AnnualProjection` - Interface for 5-year savings projections
+- `BudgetResult` - Complete result interface with all calculation outputs
+
+**Constants:**
+- `BUDGET_RULES` - Predefined budget rules (standard, aggressive-saver, high-cost-living, debt-focused, minimalist, paycheck-to-paycheck, pay-yourself-first)
+- `BUDGET_CATEGORY_COLORS` - Color mapping for chart visualization
+- `SUBCATEGORY_NAMES` - Display names for all subcategories
+
+**Functions:**
+- `calculateBudget(inputs)` - Main calculation function returning comprehensive budget analysis
+- `quickBudget(monthlyIncome)` - Quick 50/30/20 calculation
+- `categoryBudget(monthlyIncome, category, rule?)` - Calculate budget for specific category
+- `projectSavings(monthlySavings, years, annualReturn?)` - Project savings growth with compound interest
+- `suggestBudgetRule(monthlyIncome, monthlyNeeds, isHighCostArea?, hasDebt?)` - Get personalized rule recommendation
+
+**Features:**
+- 7 pre-built budget rules for different situations
+- Custom percentage support (auto-normalizes to 100%)
+- Expense tracking with actual vs target comparison
+- Category status indicators (under, on-target, over budget)
+- Detailed subcategory tracking for all three main categories
+- Personalized rule recommendation based on user situation
+- Savings optimization suggestions with priority ranking
+- Financial health scoring (0-100 with letter grades)
+- 5-year wealth projection with compound growth
+- Chart-ready data for pie chart visualization
+- Personalized recommendations and warnings
+
+### Files Modified
+
+**src/index.ts:**
+Added exports for budget calculator:
+
+```typescript
+// 50/30/20 Budget Calculator
+export {
+  type BudgetCategory,
+  type NeedsSubcategory,
+  type WantsSubcategory,
+  type SavingsSubcategory,
+  type BudgetRule,
+  type ExpenseItem,
+  type CategoryBreakdown,
+  type BudgetInputs,
+  type RuleComparison,
+  type SavingsOptimization,
+  type BudgetHealthMetrics,
+  type AnnualProjection,
+  type BudgetResult,
+  BUDGET_RULES,
+  BUDGET_CATEGORY_COLORS,
+  SUBCATEGORY_NAMES,
+  calculateBudget,
+  quickBudget,
+  categoryBudget,
+  projectSavings,
+  suggestBudgetRule
+} from './budget/budgetCalculator.js';
+```
+
+**README.md:**
+Added comprehensive documentation for 50/30/20 Budget Calculator including:
+- Calculator overview and 50/30/20 rule explanation
+- Full API documentation with all types and functions
+- Code examples for basic and advanced usage
+- Budget rules table with percentages and best-for descriptions
+- Subcategory reference tables
+- Features comparison with competitors
+
+### Budget Rules Implemented
+
+| Rule Key | Name | Needs | Wants | Savings | Best For |
+|----------|------|-------|-------|---------|----------|
+| `standard` | 50/30/20 Rule | 50% | 30% | 20% | Most people with average cost of living |
+| `aggressive-saver` | 50/20/30 Rule | 50% | 20% | 30% | FIRE/rapid wealth building |
+| `high-cost-living` | 60/20/20 Rule | 60% | 20% | 20% | SF, NYC, Boston residents |
+| `debt-focused` | 50/20/30 Debt Focus | 50% | 20% | 30% | Aggressive debt payoff |
+| `minimalist` | 70/10/20 Rule | 70% | 10% | 20% | Minimalists or high essential costs |
+| `paycheck-to-paycheck` | 80/10/10 Starter | 80% | 10% | 10% | Starting financial journey |
+| `pay-yourself-first` | Pay Yourself First | 55% | 25% | 20% | Those who struggle to save |
+
+### Usage Example
+
+```typescript
+import { 
+  calculateBudget,
+  quickBudget,
+  suggestBudgetRule,
+  BUDGET_RULES
+} from '@deanfinancials/calculators';
+
+// Simple budget calculation
+const result = calculateBudget({
+  monthlyIncome: 5000
+});
+
+console.log(result.needs.target);           // $2,500 (50%)
+console.log(result.wants.target);           // $1,500 (30%)
+console.log(result.savings.target);         // $1,000 (20%)
+
+// With expense tracking
+const trackedResult = calculateBudget({
+  monthlyIncome: 5000,
+  expenses: [
+    { description: 'Rent', amount: 1500, category: 'needs', subcategory: 'housing' },
+    { description: 'Netflix', amount: 15, category: 'wants', subcategory: 'subscriptions' },
+    { description: '401k', amount: 500, category: 'savings', subcategory: 'retirement' }
+  ]
+});
+
+console.log(trackedResult.needs.status);        // 'under', 'on-target', or 'over'
+console.log(trackedResult.healthMetrics.score); // 0-100 health score
+console.log(trackedResult.optimizations);       // Savings improvement suggestions
+console.log(trackedResult.recommendedRule);     // Best rule for user's situation
+
+// Quick calculation
+const quick = quickBudget(5000);
+// { needs: 2500, wants: 1500, savings: 1000 }
+
+// Get rule suggestion
+const bestRule = suggestBudgetRule(5000, 2800, true, false);
+// 'high-cost-living'
+```
+
+### Competitor Analysis
+
+Before implementation, analyzed leading 50/30/20 calculators:
+- **NerdWallet:** Simple income input with category breakdown
+- **Bankrate:** Basic 50/30/20 allocation display
+- **Ramsey Solutions:** Focuses on zero-based budgeting instead
+
+Our implementation improves on competitors with:
+- 7 alternative budget rules (60/20/20, 70/20/10, etc.)
+- Personalized rule recommendation based on user situation
+- Detailed expense tracking with subcategories
+- Actual vs target comparison with status indicators
+- Savings optimization suggestions with priority ranking
+- Financial health scoring (0-100)
+- 5-year wealth projection with compound growth
+- Chart-ready data for visualization
+
+### Testing Required
+
+```bash
+npm run build
+# Verify dist/budget/budgetCalculator.js exists
+# Verify exports in dist/index.js include budget calculator
+
+# Test locally with npm link
+npm link
+cd ../deanfi-website
+npm link @deanfinancials/calculators
+npm run dev
+# Visit /budget/fifty-thirty-twenty and test calculations
+```
 
 ---
 
