@@ -10,6 +10,7 @@ This document tracks all changes, implementations, and design decisions for the 
 
 ## Table of Contents
 
+- [Version 1.12.0 - FIRE Calculator](#version-1120---2025-06-09)
 - [Version 1.11.0 - Dividend Income Calculator](#version-1110---2025-01-xx)
 - [Version 1.10.0 - Roth Conversion Calculator](#version-1100---2025-01-xx)
 - [Version 1.9.0 - Paycheck Calculator](#version-190---2025-01-xx)
@@ -26,6 +27,112 @@ This document tracks all changes, implementations, and design decisions for the 
 - [Version 1.0.1 - ESM Import Path Fix](#version-101---2025-11-21)
 - [Version 1.0.0 - Initial Publication](#version-100---2025-11-21)
 - [Pre-Publication Development](#pre-publication-development)
+
+---
+
+## Version 1.12.0 - 2025-06-09
+
+**Type:** New Feature (MINOR)  
+**Status:** Published  
+**npm:** @deanfinancials/calculators@1.12.0
+
+### Overview
+
+Added comprehensive FIRE (Financial Independence, Retire Early) Calculator to a new retirement module. This calculator helps users determine their FIRE number, years to financial independence, and stress test their retirement plan against historical market crashes. Supports multiple FIRE types: Traditional, Lean, Fat, Coast, and Barista FIRE.
+
+### Key Features
+
+1. **FIRE Number Calculation** - Calculate required portfolio based on expenses and withdrawal rate
+2. **Years to FIRE** - Project when financial independence will be achieved
+3. **Multiple FIRE Types** - Support for Traditional, Lean, Fat, Coast, and Barista FIRE
+4. **Coast FIRE** - Calculate when you can stop saving and let investments grow
+5. **Barista FIRE** - Calculate part-time income needed to bridge gap
+6. **Portfolio Projections** - Year-by-year projections with contributions and returns
+7. **Historical Stress Tests** - Test plan against 2008, 2000, 1973, 1929 crashes
+8. **Sensitivity Analysis** - How changes in variables affect FIRE timeline
+9. **FIRE Milestones** - Track progress to 25%, 50%, 75%, 100% of goal
+10. **Social Security Integration** - Factor in future benefits
+11. **Success Probability** - Monte Carlo-style probability assessment
+
+### New Files Created
+
+**src/fire/fireCalculator.ts:**
+
+Complete FIRE calculator with the following exports:
+
+**Types:**
+- `FIREType` - Union type: 'lean' | 'regular' | 'fat' | 'coast' | 'barista'
+- `FIREInputs` - Complete input interface for FIRE calculation
+- `FIREStressTestScenario` - Interface for historical crash scenario
+- `FIREStressTestResult` - Result interface for stress test
+- `FIREYearlyProjection` - Interface for year-by-year portfolio projections
+- `FIRESensitivityResult` - Interface for sensitivity analysis results
+- `FIREMilestone` - Interface for milestone tracking
+- `FIREResult` - Complete result interface with all projections and analysis
+
+**Constants:**
+- `FIRE_MULTIPLIERS` - Expense multipliers for each FIRE type (lean: 0.7, regular: 1.0, fat: 1.5)
+- `HISTORICAL_CRISES` - Pre-defined historical market crash scenarios with recovery data
+
+**Functions:**
+- `calculateFIRENumber(annualExpenses, withdrawalRate, fireType)` - Calculate FIRE number based on type
+- `calculateYearsToFire(currentSavings, fireNumber, annualSavings, realReturn)` - Years until FIRE
+- `runStressTest(portfolio, annualWithdrawal, scenario)` - Test portfolio against market crash
+- `calculateCoastFIRE(currentAge, targetRetirementAge, fireNumber, realReturn)` - Coast FIRE calculation
+- `calculateBaristaFIRE(currentSavings, fireNumber, annualExpenses, realReturn)` - Barista FIRE gap
+- `generateProjections(inputs)` - Generate year-by-year portfolio projections
+- `runSensitivityAnalysis(inputs, baselineYears)` - Analyze impact of variable changes
+- `calculateMilestones(inputs, fireNumber)` - Track progress milestones
+- `calculateFIRE(inputs)` - Main comprehensive FIRE calculation function
+
+### Files Modified
+
+**src/index.ts:**
+- Added exports for all FIRE Calculator types, constants, and functions with `.js` extension
+- Added new 'fire' module category
+- Total of 18 new exports added
+
+### Implementation Details
+
+#### FIRE Type Multipliers
+Different FIRE strategies use different expense multipliers:
+- **Lean FIRE (0.7x)** - Minimal lifestyle, 70% of current expenses
+- **Regular FIRE (1.0x)** - Standard 4% rule with full expenses
+- **Fat FIRE (1.5x)** - Luxury retirement, 150% of expenses
+
+#### Historical Stress Tests
+Pre-configured historical market crises for stress testing:
+- **2008 Financial Crisis** - -37% peak drop, 5.5 year recovery
+- **2000 Dot-Com Crash** - -49% peak drop, 7 year recovery  
+- **1973-74 Oil Crisis** - -48% peak drop, 7.5 year recovery
+- **1929 Great Depression** - -89% peak drop, 25 year recovery
+
+#### Coast FIRE Formula
+Calculate the amount needed today to coast to full FIRE:
+```
+coastAmount = fireNumber / (1 + realReturn)^yearsToRetirement
+```
+
+#### Barista FIRE Calculation
+Calculate the gap between safe withdrawal and expenses:
+```
+annualGap = annualExpenses - (currentSavings * withdrawalRate)
+monthlyPartTimeNeeded = annualGap / 12
+```
+
+### Technical Notes
+
+- All calculations use real returns (nominal return - inflation)
+- Stress tests simulate sequence of returns risk
+- Sensitivity analysis tests ±1% and ±2% for withdrawal and return rates
+- Progress tracking shows years/ages for each 25% milestone
+- Social Security integration adjusts required FIRE number
+
+### Documentation References
+
+- Trinity Study (1998) - Foundation of 4% safe withdrawal rate
+- Updated research on safe withdrawal rates for early retirement
+- Historical S&P 500 data for market crisis scenarios
 
 ---
 
