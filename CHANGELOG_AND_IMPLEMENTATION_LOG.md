@@ -10,6 +10,7 @@ This document tracks all changes, implementations, and design decisions for the 
 
 ## Table of Contents
 
+- [Version 1.11.0 - Dividend Income Calculator](#version-1110---2025-01-xx)
 - [Version 1.10.0 - Roth Conversion Calculator](#version-1100---2025-01-xx)
 - [Version 1.9.0 - Paycheck Calculator](#version-190---2025-01-xx)
 - [Version 1.8.1 - Home Affordability Bug Fix](#version-181---2025-12-02)
@@ -25,6 +26,138 @@ This document tracks all changes, implementations, and design decisions for the 
 - [Version 1.0.1 - ESM Import Path Fix](#version-101---2025-11-21)
 - [Version 1.0.0 - Initial Publication](#version-100---2025-11-21)
 - [Pre-Publication Development](#pre-publication-development)
+
+---
+
+## Version 1.11.0 - 2025-01-XX
+
+**Type:** New Feature (MINOR)  
+**Status:** In Progress  
+**npm:** @deanfinancials/calculators@1.11.0
+
+### Overview
+
+Added comprehensive Dividend Income Calculator to the investment module. This calculator helps users analyze dividend income, yield, DRIP (dividend reinvestment) growth, and passive income projections with tax optimization. Unique feature includes a Dividend Stability Score (0-100) that assesses the reliability of dividend-paying stocks based on historical growth, payout ratio, sector stability, and market cap.
+
+### Key Features
+
+1. **Dividend Income Projection** - Multi-year income projections with or without DRIP
+2. **Dividend Yield Calculator** - Calculate yield from stock price and dividend amount
+3. **DRIP Analysis** - Compare reinvested vs cash dividend strategies
+4. **Dividend Tax Optimization** - Qualified vs ordinary dividend tax calculation with 2024 brackets
+5. **Dividend Stability Score** - Unique 0-100 scoring system assessing dividend reliability
+6. **Dividend Aristocrat/King Detection** - Identify stocks with 25+ or 50+ years of dividend growth
+7. **Required Investment Calculator** - Calculate portfolio size needed for target income
+8. **Yield on Cost Tracking** - Track effective yield on original investment over time
+9. **Multi-Scenario Comparison** - Compare different dividend strategies (high yield vs growth)
+10. **Years-to-Goal Calculator** - Estimate time to reach passive income targets
+11. **Inflation-Adjusted Projections** - Real purchasing power of future dividends
+
+### New Files Created
+
+**src/investment/dividendCalculator.ts:**
+
+Complete dividend income calculator with the following exports:
+
+**Types:**
+- `DividendTaxFilingStatus` - Union type: 'single' | 'married-filing-jointly' | 'married-filing-separately' | 'head-of-household'
+- `DividendFrequency` - Union type: 'monthly' | 'quarterly' | 'semi-annually' | 'annually'
+- `DividendStabilityRating` - Union type: 'excellent' | 'good' | 'moderate' | 'poor' | 'risky'
+- `DividendIncomeInputs` - Complete input interface for dividend income calculation
+- `DividendYieldInputs` - Input interface for yield calculation
+- `DividendYieldResult` - Result interface for yield calculation
+- `YearlyDividendProjection` - Interface for year-by-year dividend projections
+- `DividendTaxBreakdown` - Interface for tax calculation breakdown
+- `DividendStabilityInputs` - Input interface for stability assessment
+- `DividendStabilityAssessment` - Result interface for stability score
+- `DividendIncomeResult` - Complete result interface with all projections
+- `DividendScenarioComparison` - Interface for scenario comparison results
+
+**Constants:**
+- `DIVIDEND_TAX_BRACKETS_2024` - Qualified dividend tax brackets for all filing statuses
+- `STANDARD_DEDUCTIONS_2024` - Standard deductions by filing status
+
+**Functions:**
+- `calculateDividendYield(inputs)` - Calculate dividend yield from price and dividend
+- `quickDividendYield(stockPrice, annualDividend)` - Quick yield percentage calculation
+- `calculateRequiredInvestment(targetIncome, dividendYield)` - Calculate portfolio needed for income
+- `assessDividendStability(inputs)` - Unique dividend stability assessment (0-100 score)
+- `calculateDividendTaxBreakdown(inputs)` - Calculate qualified vs ordinary dividend taxes
+- `calculateDividendIncome(inputs)` - Main comprehensive calculation function
+- `compareDividendScenarios(scenarios, yearsToProject)` - Compare multiple dividend strategies
+- `estimateYearsToGoal(principal, targetIncome, currentYield, dividendGrowthRate, annualAddition, reinvest)` - Calculate years to income goal
+
+### Files Modified
+
+**src/index.ts:**
+- Added exports for all Dividend Income Calculator types, constants, and functions with `.js` extension
+- Total of 26 new exports added
+
+### Implementation Details
+
+#### Dividend Stability Score (Unique Feature)
+The dividend stability assessment is a unique feature that competitors don't offer. It calculates a score (0-100) based on multiple factors:
+
+```typescript
+const stability = assessDividendStability({
+  yearsOfConsecutiveGrowth: 25,
+  averageGrowthRate: 7,
+  payoutRatio: 45,
+  sectorStability: 'high',
+  marketCap: 'large-cap',
+  hasReducedDividend: false
+});
+// Result: { stabilityScore: 92, stabilityRating: 'excellent', isDividendAristocrat: true, ... }
+```
+
+**Scoring Components:**
+- Base Score: Years of consecutive dividend growth (max 35 points)
+- Growth Rate: Average annual dividend growth (max 15 points)
+- Payout Ratio: Sustainable payout ratio penalty/bonus (max 20 points)
+- Sector Stability: Industry stability factor (max 10 points)
+- Market Cap: Size stability factor (max 10 points)
+- Dividend History: Penalty for cuts/suspensions (up to -30 points)
+
+**Rating Scale:**
+| Score Range | Rating | Description |
+|-------------|--------|-------------|
+| 85-100 | Excellent | Dividend Kings/Aristocrats - Very reliable |
+| 70-84 | Good | Strong history, low risk |
+| 50-69 | Moderate | Reasonable stability, some concerns |
+| 30-49 | Poor | Higher risk, inconsistent history |
+| 0-29 | Risky | High probability of dividend cut |
+
+#### Qualified Dividend Tax Rates
+Uses 2024 qualified dividend tax brackets (0%, 15%, 20%) based on taxable income and filing status:
+
+```typescript
+// 2024 Qualified Dividend Tax Brackets
+const DIVIDEND_TAX_BRACKETS_2024 = {
+  'single': [
+    { min: 0, max: 47025, rate: 0 },
+    { min: 47026, max: 518900, rate: 15 },
+    { min: 518901, max: Infinity, rate: 20 }
+  ],
+  // ... other filing statuses
+};
+```
+
+### Testing Verification
+
+```bash
+npm run build  # TypeScript compilation successful
+```
+
+All types properly exported and calculator functions work as documented.
+
+### Documentation Updates
+
+**README.md:**
+- Added comprehensive documentation for Dividend Income Calculator
+- Includes all code examples for each function
+- Added tax bracket reference tables
+- Added "Features That Competitors Don't Have" section highlighting unique capabilities
+- Renumbered subsequent calculators (15 → 16, 16 → 17, etc.)
 
 ---
 

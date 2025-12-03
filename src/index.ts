@@ -173,6 +173,32 @@ export {
   getTypicalPenalty
 } from './investment/cdCalculator.js';
 
+// Dividend Income Calculator
+export {
+  type DividendTaxFilingStatus,
+  type DividendFrequency,
+  type DividendStabilityRating,
+  type DividendIncomeInputs,
+  type DividendYieldResult,
+  type YearlyDividendProjection,
+  type DividendTaxBreakdown,
+  type DividendStabilityAssessment,
+  type DividendIncomeResult,
+  getDividendPaymentsPerYear,
+  calculateDividendYield,
+  calculateSharesFromInvestment,
+  calculateAnnualDividendIncome,
+  getQualifiedDividendTaxRate,
+  estimateOrdinaryTaxRate,
+  calculateDividendTaxBreakdown,
+  assessDividendStability,
+  calculateDividendIncome,
+  quickDividendYield,
+  calculateRequiredInvestment,
+  compareDividendScenarios,
+  estimateYearsToGoal
+} from './investment/dividendCalculator.js';
+
 // Budget Calculators
 export {
   type SavingsGoalType,

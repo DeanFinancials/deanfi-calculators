@@ -870,9 +870,166 @@ console.log(result.projections);           // Array of year-by-year projections
 
 **Wealth Percentile Data**: Based on Federal Reserve Survey of Consumer Finances (SCF) age-bracketed data
 
+#### 15. Dividend Income Calculator
+Calculate dividend income, yield, DRIP (dividend reinvestment) growth, and passive income projections with tax optimization and dividend stability assessment.
+
+```typescript
+import { 
+  calculateDividendIncome,
+  calculateDividendYield,
+  quickDividendYield,
+  calculateRequiredInvestment,
+  assessDividendStability,
+  calculateDividendTaxBreakdown,
+  compareDividendScenarios,
+  estimateYearsToGoal,
+  type DividendIncomeInputs,
+  type DividendIncomeResult,
+  type YearlyDividendProjection,
+  type DividendStabilityAssessment,
+  type DividendTaxBreakdown,
+  type DividendFrequency,
+  type DividendTaxFilingStatus,
+  type DividendStabilityRating,
+  DIVIDEND_TAX_BRACKETS_2024,
+  STANDARD_DEDUCTIONS_2024
+} from '@deanfinancials/calculators';
+
+// Full dividend income calculation with DRIP
+const result = calculateDividendIncome({
+  principal: 100000,
+  annualDividendYield: 4,                  // 4% yield
+  dividendFrequency: 'quarterly',          // How often dividends are paid
+  yearsToProject: 20,
+  reinvestDividends: true,                 // Enable DRIP
+  dividendGrowthRate: 5,                   // 5% annual dividend growth
+  additionalInvestmentPerYear: 6000,       // $500/month
+  qualifiedDividendPercentage: 80,         // 80% qualified (lower tax)
+  taxFilingStatus: 'married-filing-jointly',
+  taxableIncome: 150000,
+  inflationRate: 3
+});
+
+console.log(result.yearlyProjections);            // Year-by-year breakdown
+console.log(result.totalDividendsReceived);       // Cumulative dividends over period
+console.log(result.finalPortfolioValue);          // Ending portfolio value
+console.log(result.effectiveYieldOnCost);         // Yield on original investment
+console.log(result.compoundedAnnualGrowthRate);   // CAGR of portfolio
+console.log(result.yearlyIncomeAtEnd);            // Annual dividend income at year 20
+console.log(result.monthlyIncomeAtEnd);           // Monthly passive income at end
+
+// Tax breakdown
+console.log(result.taxBreakdown.qualifiedDividends);   // Amount taxed at lower rate
+console.log(result.taxBreakdown.ordinaryDividends);    // Amount taxed at ordinary rate
+console.log(result.taxBreakdown.qualifiedTaxRate);     // Applied qualified rate (0%, 15%, 20%)
+console.log(result.taxBreakdown.estimatedTax);         // Annual tax liability
+console.log(result.taxBreakdown.afterTaxIncome);       // Net income after taxes
+
+// Each yearly projection includes:
+// { year, startingValue, dividendIncome, taxOnDividends, netDividendIncome,
+//   reinvestedAmount, additionalInvestment, endingValue, yieldOnCost, 
+//   cumulativeDividends, inflationAdjustedIncome }
+
+// Calculate dividend yield
+const yieldResult = calculateDividendYield({
+  stockPrice: 150,
+  annualDividend: 6               // $6 per share annually
+});
+console.log(yieldResult.dividendYield);       // 4%
+console.log(yieldResult.quarterlyDividend);   // $1.50
+console.log(yieldResult.monthlyEquivalent);   // $0.50
+
+// Quick yield calculation
+const quickYield = quickDividendYield(150, 6);  // 4%
+
+// Calculate required investment for income goal
+const requiredInvestment = calculateRequiredInvestment(
+  50000,   // Desired annual income
+  4        // Current dividend yield
+);
+console.log(requiredInvestment);              // $1,250,000
+
+// Assess dividend stability (unique feature!)
+const stability = assessDividendStability({
+  yearsOfConsecutiveGrowth: 25,
+  averageGrowthRate: 7,
+  payoutRatio: 45,
+  sectorStability: 'high',
+  marketCap: 'large-cap',
+  hasReducedDividend: false
+});
+console.log(stability.stabilityScore);        // 0-100 score
+console.log(stability.stabilityRating);       // 'excellent', 'good', 'moderate', 'poor', 'risky'
+console.log(stability.isDividendAristocrat);  // 25+ years of growth
+console.log(stability.isDividendKing);        // 50+ years of growth
+console.log(stability.recommendations);       // Array of insights
+console.log(stability.riskFactors);           // Potential concerns
+console.log(stability.positiveFactors);       // Strengths
+
+// Calculate tax breakdown for a specific dividend amount
+const taxBreakdown = calculateDividendTaxBreakdown({
+  totalDividends: 20000,
+  qualifiedPercentage: 80,
+  taxableIncome: 150000,
+  filingStatus: 'married-filing-jointly'
+});
+
+// Compare multiple dividend scenarios
+const scenarios = compareDividendScenarios([
+  { label: 'High Yield ETF', principal: 100000, annualDividendYield: 6, dividendGrowthRate: 2 },
+  { label: 'Dividend Aristocrats', principal: 100000, annualDividendYield: 3, dividendGrowthRate: 8 },
+  { label: 'Balanced Portfolio', principal: 100000, annualDividendYield: 4, dividendGrowthRate: 5 }
+], 20);  // Compare over 20 years
+
+console.log(scenarios.scenarios);             // Full results for each
+console.log(scenarios.bestByTotalDividends);  // Scenario label with most total dividends
+console.log(scenarios.bestByFinalValue);      // Scenario label with highest ending value
+console.log(scenarios.bestByIncomeAtEnd);     // Scenario with highest income at end
+console.log(scenarios.summary);               // Quick comparison stats
+
+// Estimate years to reach income goal
+const yearsNeeded = estimateYearsToGoal(
+  100000,  // Current portfolio
+  50000,   // Target annual income
+  4,       // Current yield
+  5,       // Dividend growth rate
+  6000,    // Additional investment per year
+  true     // Reinvest dividends
+);
+console.log(yearsNeeded);                     // ~18 years
+```
+
+**Dividend Frequencies**: `monthly`, `quarterly`, `semi-annually`, `annually`
+
+**Tax Filing Statuses**: `single`, `married-filing-jointly`, `married-filing-separately`, `head-of-household`
+
+**Dividend Stability Ratings**:
+- **Excellent** (score 85-100): Dividend Kings, Aristocrats - very reliable
+- **Good** (score 70-84): Strong dividend history, low risk
+- **Moderate** (score 50-69): Reasonable stability, some risk factors
+- **Poor** (score 30-49): Higher risk, inconsistent history
+- **Risky** (score 0-29): High probability of dividend cut
+
+**Qualified Dividend Tax Rates (2024)**:
+| Filing Status | 0% Rate | 15% Rate | 20% Rate |
+|---------------|---------|----------|----------|
+| Single | Up to $47,025 | $47,026 - $518,900 | Over $518,900 |
+| Married Filing Jointly | Up to $94,050 | $94,051 - $583,750 | Over $583,750 |
+| Head of Household | Up to $63,000 | $63,001 - $551,350 | Over $551,350 |
+
+**Features That Competitors Don't Have**:
+- Dividend Stability Score (0-100) with risk assessment
+- Dividend Aristocrat/King detection
+- DRIP vs non-DRIP comparison
+- Qualified vs ordinary dividend tax optimization
+- Inflation-adjusted income projections
+- Yield on cost tracking (effective yield on original investment)
+- Multi-scenario comparison for portfolio strategies
+- Years-to-goal calculator for passive income targets
+
 ### Budget
 
-#### 15. Savings Goal Calculator
+#### 16. Savings Goal Calculator
 Calculate how much to save monthly to reach any financial goal with milestone tracking.
 
 ```typescript
@@ -947,7 +1104,7 @@ const scenarios = compareSavingsScenarios([
 - Specialized calculators for emergency funds and down payments
 - Achievability warnings for difficult goals
 
-#### 16. Emergency Fund Calculator
+#### 17. Emergency Fund Calculator
 Calculate personalized emergency fund recommendations based on your risk profile, with savings plans and milestone tracking.
 
 ```typescript
@@ -1061,7 +1218,7 @@ const recommendedMonths = getRecommendedMonths(true, true, true); // 9 months
 - Weekly and monthly savings requirements
 - Personalized recommendations based on your situation
 
-#### 17. 50/30/20 Budget Calculator
+#### 18. 50/30/20 Budget Calculator
 Calculate budget allocation based on the classic 50/30/20 rule and compare alternative budgeting strategies.
 
 ```typescript
@@ -1181,7 +1338,7 @@ const bestRule = suggestBudgetRule(5000, 2800, true, false);  // 'high-cost-livi
 - Financial health scoring (0-100)
 - Category breakdown with subcategories
 
-#### 18. Home Affordability Calculator
+#### 19. Home Affordability Calculator
 Calculate "how much house can I afford" based on income, debts, down payment, and loan options. Features DTI analysis, PMI calculation, loan type comparison, and affordability comfort zones.
 
 ```typescript
@@ -1318,7 +1475,7 @@ console.log(payment);                            // Monthly P&I payment
 - Personalized recommendations based on DTI status
 - Chart-ready data structures for visualization
 
-#### 19. Paycheck Calculator
+#### 20. Paycheck Calculator
 Calculate take-home pay after federal taxes, state taxes, FICA, and deductions. Features 2024/2025 tax brackets, all 50 US states, pre-tax and post-tax deductions, and state-by-state comparison.
 
 ```typescript
