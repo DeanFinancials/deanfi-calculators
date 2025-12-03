@@ -1676,6 +1676,175 @@ console.log(bracketInfo.nextBracketRate);       // 24%
 - Marginal vs effective tax rate breakdown
 - Tax bracket information with income-to-next-bracket
 
+### FIRE (Financial Independence Retire Early)
+
+#### 21. FIRE Calculator
+Comprehensive Financial Independence calculator with multiple FIRE types, historical stress testing, and detailed projections.
+
+```typescript
+import { 
+  calculateFIRE,
+  calculateFIRENumber,
+  calculateYearsToFire,
+  calculateCoastFIRETarget,
+  quickFIRENumber,
+  quickYearsToFire,
+  savingsRateForYears,
+  compareFIREScenarios,
+  type FIREInputs,
+  type FIREResult,
+  type FIREType,
+  HISTORICAL_CRISES
+} from '@deanfinancials/calculators';
+
+// Full FIRE calculation
+const result = calculateFIRE({
+  currentAge: 30,
+  annualIncome: 100000,
+  currentSavings: 150000,
+  annualExpenses: 50000,
+  expectedReturn: 0.07,          // 7%
+  safeWithdrawalRate: 0.04,      // 4% rule
+  inflationRate: 0.03,           // 3%
+  fireType: 'regular',           // 'lean', 'regular', 'fat', 'coast', 'barista'
+  socialSecurityBenefit: 24000,  // Expected annual SS benefit
+  socialSecurityStartAge: 67,
+  includeStressTest: true        // Test against historical crashes
+});
+
+// Core results
+console.log(result.fireNumber);          // $1,250,000 (25x expenses)
+console.log(result.yearsToFire);         // Years until FI
+console.log(result.fireAge);             // Age at FIRE
+console.log(result.fireProgress);        // Current progress %
+console.log(result.alreadyAchieved);     // Boolean
+
+// Savings analysis
+console.log(result.annualSavings);       // Current annual savings
+console.log(result.monthlySavings);      // Monthly savings
+console.log(result.savingsRate);         // Savings rate (0-1)
+console.log(result.totalContributions);  // Sum of all contributions until FIRE
+console.log(result.totalReturns);        // Investment returns until FIRE
+
+// Withdrawal analysis
+console.log(result.safeAnnualWithdrawal);    // $50,000/year
+console.log(result.safeMonthlyWithdrawal);   // $4,167/month
+console.log(result.successProbability);      // % chance of success (Trinity Study)
+
+// Alternative FIRE types
+console.log(result.leanFireNumber);      // 70% of regular (minimal lifestyle)
+console.log(result.fatFireNumber);       // 150% of regular (comfortable)
+
+// Coast FIRE (stop saving, let it grow)
+console.log(result.coastFire.achieved);      // Already at Coast FIRE?
+console.log(result.coastFire.coastTarget);   // Amount needed now to coast
+console.log(result.coastFire.coastAge);      // Age when Coast FIRE achieved
+console.log(result.coastFire.yearsToCoast);  // Years until Coast FIRE
+
+// Barista FIRE (part-time work to cover gap)
+console.log(result.baristaFire.achievable);          // Can achieve Barista FIRE?
+console.log(result.baristaFire.portfolioNeeded);     // Portfolio needed
+console.log(result.baristaFire.requiredPartTimeIncome); // Part-time income needed
+
+// Year-by-year projections
+console.log(result.projections);         // Array of YearlyFIREProjection
+// Each: { year, age, startBalance, contributions, returns, withdrawals, 
+//         endBalance, fireAchieved, fireProgress, ... }
+
+// Milestones (25%, 50%, 75%, 100%, Coast FIRE)
+console.log(result.milestones);          // Array of FIREMilestone
+// Each: { name, amount, yearAchieved, ageAchieved, description }
+
+// Historical stress tests (Great Depression, 2008, etc.)
+console.log(result.stressTests);         // Array of StressTestScenario
+// Each: { name, survived, yearsLasted, lowestBalance, recoveryYears, recommendation }
+console.log(result.stressTestScore);     // 0-100 score based on survival
+
+// Sensitivity analysis (how changes affect timeline)
+console.log(result.sensitivityAnalysis); // How savings rate, return, withdrawal rate affect years
+
+// Personalized recommendations
+console.log(result.recommendations);     // Array of actionable advice
+console.log(result.warnings);            // Potential issues with plan
+console.log(result.summary);             // Human-readable summary
+console.log(result.timeUntilFreedom);    // "12 years" or "Already achieved!"
+
+// Quick calculations
+const fireNum = quickFIRENumber(50000);           // $1,250,000 (at 4%)
+const fireNum3 = quickFIRENumber(50000, 0.03);    // $1,666,667 (at 3%)
+const years = quickYearsToFire(150000, 30000, 1250000); // Years to reach target
+
+// Calculate savings rate needed for specific timeline
+const rateNeeded = savingsRateForYears(
+  150000,     // Current savings
+  100000,     // Annual income
+  50000,      // Annual expenses
+  15,         // Target years
+  0.07,       // Expected return
+  0.03,       // Inflation
+  0.04        // Withdrawal rate
+);
+console.log(rateNeeded);  // ~0.42 (42% savings rate needed)
+
+// Coast FIRE target calculation
+const coastTarget = calculateCoastFIRETarget(
+  1250000,    // FIRE number
+  25,         // Years until traditional retirement
+  0.07,       // Expected return
+  0.03        // Inflation
+);
+console.log(coastTarget); // Amount needed now to "coast" to retirement
+
+// Compare different scenarios
+const scenarios = compareFIREScenarios(
+  { currentAge: 30, annualIncome: 100000, currentSavings: 150000, annualExpenses: 50000 },
+  [
+    { name: 'Aggressive Saving', changes: { savingsRate: 0.5 } },
+    { name: 'Higher Return', changes: { expectedReturn: 0.09 } },
+    { name: 'Lower Expenses', changes: { annualExpenses: 40000 } }
+  ]
+);
+scenarios.forEach(s => console.log(`${s.name}: ${s.result.yearsToFire} years`));
+```
+
+**FIRE Types**:
+- `lean` - Minimal lifestyle (70% of normal expenses)
+- `regular` - Standard FIRE (100% of expenses)
+- `fat` - Comfortable lifestyle (150% of expenses)
+- `coast` - Stop saving, let investments grow to traditional retirement
+- `barista` - Part-time work to cover income gap
+
+**Historical Crisis Stress Tests**:
+| Crisis | Year | Description |
+|--------|------|-------------|
+| Great Depression | 1929 | Worst market crash in US history, 89% decline |
+| Stagflation | 1973 | Oil crisis with high inflation and market decline |
+| Dot-Com Crash | 2000 | Tech bubble burst, followed by 9/11 |
+| Financial Crisis | 2008 | Housing crash and global financial crisis |
+| COVID Crash | 2020 | Pandemic-induced market crash and recovery |
+
+**Key Formulas**:
+```
+FIRE Number = Annual Expenses / Withdrawal Rate
+Example: $50,000 / 0.04 = $1,250,000
+
+Savings Rate = (Income - Expenses) / Income
+
+Years to FIRE = iterative compound growth calculation
+accounting for contributions and real (inflation-adjusted) returns
+```
+
+**Features That Competitors Don't Have**:
+- Multiple FIRE type analysis (Lean, Regular, Fat, Coast, Barista) in one calculation
+- Historical stress testing against actual market crises (1929, 1973, 2000, 2008, 2020)
+- Recovery time analysis for each historical scenario
+- Sensitivity analysis showing how changes affect timeline
+- Coast FIRE and Barista FIRE calculations integrated
+- Success probability based on Trinity Study research
+- Personalized recommendations based on your specific situation
+- Social Security and pension integration for accurate projections
+- Milestone tracking with projected achievement dates
+
 ## Formulas & Methodology
 
 All calculations use industry-standard formulas:

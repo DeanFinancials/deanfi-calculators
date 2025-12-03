@@ -235,6 +235,40 @@ export {
   getRecommendedMonths
 } from './budget/emergencyFund.js';
 
+// FIRE (Financial Independence Retire Early) Calculator
+export {
+  type FIREType,
+  type WithdrawalStrategy,
+  type FIREInputs,
+  type YearlyFIREProjection,
+  type FIREMilestone,
+  type StressTestScenario as FIREStressTestScenario,
+  type CoastFIREAnalysis,
+  type BaristaFIREAnalysis,
+  type SensitivityAnalysis,
+  type FIREResult,
+  HISTORICAL_CRISES,
+  FIRE_MULTIPLIERS,
+  EXPENSE_MULTIPLIERS,
+  calculateFIRENumber,
+  calculateYearsToFire,
+  calculateSavingsRate,
+  calculateCoastFIRETarget,
+  calculateBaristaFIRERequirements,
+  estimateSuccessProbability,
+  runStressTest,
+  generateProjections as generateFIREProjections,
+  generateMilestones as generateFIREMilestones,
+  generateSensitivityAnalysis as generateFIRESensitivityAnalysis,
+  generateRecommendations as generateFIRERecommendations,
+  generateWarnings as generateFIREWarnings,
+  calculateFIRE,
+  quickFIRENumber,
+  quickYearsToFire,
+  savingsRateForYears,
+  compareFIREScenarios
+} from './fire/fireCalculator.js';
+
 // 50/30/20 Budget Calculator
 export {
   type BudgetCategory,
