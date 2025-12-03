@@ -38,6 +38,34 @@ export {
   analyzeQCDOpportunity
 } from './retirement/rmdCalculator.js';
 
+// Roth IRA Conversion Calculator
+export {
+  type RothFilingStatus,
+  type ConvertibleAccountType,
+  type RothConversionInputs,
+  type TaxBracket,
+  type TaxImpact,
+  type YearlyProjection as RothYearlyProjection,
+  type BreakEvenAnalysis,
+  type OptimalConversion,
+  type RothConversionResult,
+  FEDERAL_TAX_BRACKETS_2024 as ROTH_FEDERAL_TAX_BRACKETS_2024,
+  FEDERAL_TAX_BRACKETS_2025 as ROTH_FEDERAL_TAX_BRACKETS_2025,
+  STANDARD_DEDUCTIONS_2024 as ROTH_STANDARD_DEDUCTIONS_2024,
+  getTaxBracket as getRothTaxBracket,
+  calculateFederalTax as calculateRothFederalTax,
+  getMarginalRate,
+  getRoomInCurrentBracket,
+  calculateTaxImpact,
+  generateProjections,
+  calculateBreakEven as calculateBreakEvenRoth,
+  calculateOptimalConversion,
+  calculateRothConversion,
+  quickConversionTax,
+  calculateBracketFillingAmount,
+  compareConversionScenarios
+} from './retirement/rothConversion.js';
+
 // Debt Calculators
 export {
   type Debt,

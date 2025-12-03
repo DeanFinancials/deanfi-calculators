@@ -10,6 +10,7 @@ This document tracks all changes, implementations, and design decisions for the 
 
 ## Table of Contents
 
+- [Version 1.10.0 - Roth Conversion Calculator](#version-1100---2025-01-xx)
 - [Version 1.9.0 - Paycheck Calculator](#version-190---2025-01-xx)
 - [Version 1.8.1 - Home Affordability Bug Fix](#version-181---2025-12-02)
 - [Version 1.8.0 - Home Affordability Calculator](#version-180---2025-06-xx)
@@ -24,6 +25,144 @@ This document tracks all changes, implementations, and design decisions for the 
 - [Version 1.0.1 - ESM Import Path Fix](#version-101---2025-11-21)
 - [Version 1.0.0 - Initial Publication](#version-100---2025-11-21)
 - [Pre-Publication Development](#pre-publication-development)
+
+---
+
+## Version 1.10.0 - 2025-01-XX
+
+**Type:** New Feature (MINOR)  
+**Status:** Published  
+**npm:** @deanfinancials/calculators@1.10.0
+
+### Overview
+
+Added comprehensive Roth IRA Conversion Calculator to the retirement module. This calculator helps users analyze the tax implications of converting Traditional IRA, 401(k), or other pre-tax retirement accounts to Roth IRA. Features include break-even analysis, optimal conversion amount recommendations, bracket-filling strategy (a unique feature), multi-year projections comparing traditional vs Roth paths, and scenario comparisons for different conversion amounts.
+
+### Key Features
+
+1. **Tax Impact Analysis** - Calculate federal and state tax on any conversion amount with marginal bracket identification
+2. **Break-Even Analysis** - Determine how many years until Roth conversion benefits outweigh upfront tax cost
+3. **Optimal Conversion Calculator** - Recommends conversion amount based on current bracket and income
+4. **Bracket-Filling Strategy** - Unique feature showing exact amount to convert to fill current tax bracket without pushing into higher bracket
+5. **Multi-Year Projections** - Year-by-year comparison of Traditional vs Roth balances and tax implications
+6. **Scenario Comparison** - Compare no conversion, partial conversion, and full conversion strategies
+7. **Account Type Support** - Traditional IRA, 401(k), 403(b), SEP IRA, SIMPLE IRA
+8. **2024/2025 Tax Brackets** - Current and upcoming year tax bracket support
+
+### New Files Created
+
+**src/retirement/rothConversion.ts:**
+
+Complete Roth conversion calculator with the following exports:
+
+**Types:**
+- `RothFilingStatus` - Union type: 'single' | 'married_joint' | 'married_separate' | 'head_of_household'
+- `ConvertibleAccountType` - Union type: 'traditional_ira' | '401k' | '403b' | 'sep_ira' | 'simple_ira'
+- `RothConversionInputs` - Complete input interface for conversion analysis
+- `TaxBracket` - Interface for tax bracket data (min, max, rate)
+- `TaxImpact` - Interface for tax calculation results
+- `YearlyProjection` - Interface for multi-year projection data (exported as RothYearlyProjection)
+- `BreakEvenAnalysis` - Interface for break-even calculation results
+- `OptimalConversion` - Interface for optimal conversion recommendations
+- `RothConversionResult` - Complete result interface with all analysis outputs
+
+**Constants:**
+- `FEDERAL_TAX_BRACKETS_2024` - 2024 federal tax brackets for all filing statuses (exported as ROTH_FEDERAL_TAX_BRACKETS_2024)
+- `FEDERAL_TAX_BRACKETS_2025` - 2025 federal tax brackets for all filing statuses (exported as ROTH_FEDERAL_TAX_BRACKETS_2025)
+- `STANDARD_DEDUCTIONS_2024` - Standard deductions by filing status (exported as ROTH_STANDARD_DEDUCTIONS_2024)
+
+**Functions:**
+- `getTaxBracket(income, filingStatus, taxYear)` - Get tax bracket for given income (exported as getRothTaxBracket)
+- `calculateFederalTax(taxableIncome, filingStatus, taxYear)` - Calculate federal tax using progressive brackets (exported as calculateRothFederalTax)
+- `getMarginalRate(taxableIncome, filingStatus, taxYear)` - Get marginal tax rate
+- `getRoomInCurrentBracket(taxableIncome, filingStatus, taxYear)` - Calculate room left in current bracket
+- `calculateTaxImpact(conversionAmount, currentIncome, filingStatus, stateTaxRate, taxYear)` - Full tax impact analysis
+- `generateProjections(inputs)` - Generate multi-year Traditional vs Roth projections
+- `calculateBreakEven(conversionAmount, taxPaid, returnRate, currentRate, futureRate)` - Calculate break-even years (exported as calculateBreakEvenRoth)
+- `calculateOptimalConversion(currentIncome, filingStatus, taxYear)` - Recommend optimal conversion amount
+- `calculateRothConversion(inputs)` - Main comprehensive analysis function
+- `quickConversionTax(amount, income, status)` - Quick tax estimate for conversion
+- `calculateBracketFillingAmount(currentIncome, filingStatus, taxYear)` - Calculate exact amount to fill current bracket
+- `compareConversionScenarios(baseInputs, conversionAmounts)` - Compare multiple conversion scenarios
+
+### Files Modified
+
+**src/index.ts:**
+- Added exports for all Roth Conversion Calculator types, constants, and functions with `.js` extension
+- Used aliases for constants that conflict with Paycheck Calculator exports (ROTH_FEDERAL_TAX_BRACKETS_2024, etc.)
+- Used aliases for functions that conflict with other calculators (getRothTaxBracket, calculateRothFederalTax, calculateBreakEvenRoth)
+
+### Implementation Details
+
+#### Bracket-Filling Strategy
+The unique bracket-filling feature calculates the exact dollar amount a user can convert while staying within their current tax bracket:
+
+```typescript
+const bracketFill = calculateBracketFillingAmount(120000, 'married_joint', 2024);
+// Returns:
+// {
+//   currentBracket: { min: 94300, max: 201050, rate: 0.22 },
+//   roomInBracket: 81050,
+//   fillToTopOfBracket: 81050,
+//   nextBracketRate: 0.24,
+//   taxOnFillAmount: 17831
+// }
+```
+
+#### Break-Even Analysis
+Calculates when Roth conversion becomes beneficial by comparing:
+- Upfront tax cost today (at current rate)
+- Future tax savings (at expected retirement rate)
+- Time value of money with expected returns
+
+Formula considers:
+- Conversion amount grows tax-free in Roth
+- Same amount in Traditional would be taxed at withdrawal
+- Tax paid now has opportunity cost
+
+#### Multi-Year Projections
+Generates year-by-year comparison showing:
+- Traditional balance (pre-tax, subject to RMDs)
+- Roth balance (tax-free, no RMDs during owner's lifetime)
+- Annual withdrawal amounts
+- Tax on Traditional withdrawals
+- Cumulative tax savings
+
+### Testing Notes
+
+To test the calculator:
+
+```typescript
+import { calculateRothConversion, calculateBracketFillingAmount } from '@deanfinancials/calculators';
+
+// Test full analysis
+const result = calculateRothConversion({
+  traditionalBalance: 500000,
+  conversionAmount: 50000,
+  accountType: 'traditional_ira',
+  currentAge: 55,
+  retirementAge: 65,
+  filingStatus: 'married_joint',
+  currentTaxableIncome: 120000,
+  retirementTaxableIncome: 60000,
+  currentStateTaxRate: 0.05,
+  retirementStateTaxRate: 0.05,
+  taxYear: 2024,
+  expectedReturnRate: 0.07,
+  payTaxFromConversion: false
+});
+
+// Test bracket filling
+const bracketFill = calculateBracketFillingAmount(120000, 'married_joint', 2024);
+console.log(`Room in 22% bracket: $${bracketFill.roomInBracket.toLocaleString()}`);
+```
+
+### Documentation Updates
+
+- **README.md** - Added comprehensive documentation for Roth Conversion Calculator under Retirement Planning section
+- Included all types, constants, and functions with code examples
+- Added table of 2024 tax brackets and conversion strategy guide
+- Documented when to consider Roth conversion and key thresholds to watch (IRMAA, NIIT)
 
 ---
 

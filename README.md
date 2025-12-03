@@ -267,6 +267,229 @@ const laterStartAge = getRMDStartAge(1965);   // 75 (born 1960+)
 - SECURE Act 2.0 compliant age rules
 - Penalty rate information
 
+#### 6. Roth IRA Conversion Calculator
+Analyze the tax implications of converting Traditional IRA or 401(k) funds to a Roth IRA, with break-even analysis, optimal conversion strategies, bracket-filling recommendations, and multi-year projections.
+
+```typescript
+import { 
+  calculateRothConversion,
+  calculateTaxImpact,
+  calculateBreakEvenRoth,
+  calculateOptimalConversion,
+  calculateBracketFillingAmount,
+  generateProjections,
+  compareConversionScenarios,
+  type RothConversionInputs,
+  type RothConversionResult,
+  type RothFilingStatus,
+  type ConvertibleAccountType,
+  type TaxImpact,
+  type BreakEvenAnalysis,
+  type OptimalConversion,
+  type RothYearlyProjection,
+  FEDERAL_TAX_BRACKETS_2024,
+  FEDERAL_TAX_BRACKETS_2025,
+  STANDARD_DEDUCTIONS_2024
+} from '@deanfinancials/calculators';
+
+// Full Roth conversion analysis
+const result = calculateRothConversion({
+  // Account information
+  traditionalBalance: 500000,              // Current Traditional IRA/401k balance
+  conversionAmount: 50000,                 // Amount to convert this year
+  accountType: 'traditional_ira',          // Account type being converted
+  
+  // Personal information
+  currentAge: 55,
+  retirementAge: 65,
+  filingStatus: 'married_joint',
+  
+  // Income information
+  currentTaxableIncome: 120000,            // Other taxable income this year
+  retirementTaxableIncome: 60000,          // Expected retirement income
+  
+  // Tax assumptions
+  currentStateTaxRate: 0.05,               // 5% state tax
+  retirementStateTaxRate: 0.05,            // May differ if relocating
+  taxYear: 2024,
+  
+  // Growth assumptions
+  expectedReturnRate: 0.07,                // 7% annual return
+  
+  // Optional: source for tax payment
+  payTaxFromConversion: false,             // Pay taxes from outside funds (recommended)
+  taxPaymentSource: 'external'             // 'external' or 'conversion'
+});
+
+// Conversion summary
+console.log(result.conversionAmount);           // $50,000
+console.log(result.traditionalBalance);         // $500,000 original balance
+console.log(result.remainingTraditionalBalance); // $450,000 after conversion
+
+// Tax impact of the conversion
+console.log(result.taxImpact.federalTax);       // Federal tax on conversion
+console.log(result.taxImpact.stateTax);         // State tax on conversion
+console.log(result.taxImpact.totalTax);         // Combined tax due
+console.log(result.taxImpact.effectiveRate);    // Effective tax rate on conversion
+console.log(result.taxImpact.marginalBracket);  // Tax bracket the conversion pushes you into
+console.log(result.taxImpact.bracketStart);     // Where current bracket begins
+console.log(result.taxImpact.bracketEnd);       // Where current bracket ends
+console.log(result.taxImpact.amountInHigherBracket); // Amount taxed at higher rate
+
+// Break-even analysis
+console.log(result.breakEvenAnalysis.breakEvenYears);     // Years until Roth is better
+console.log(result.breakEvenAnalysis.totalTaxNow);        // Tax cost of converting now
+console.log(result.breakEvenAnalysis.projectedTaxSavings); // Tax savings in retirement
+console.log(result.breakEvenAnalysis.netBenefit);         // Net benefit of conversion
+console.log(result.breakEvenAnalysis.worthConverting);    // Boolean recommendation
+
+// Optimal conversion recommendation
+console.log(result.optimalConversion.recommendedAmount);   // Suggested conversion amount
+console.log(result.optimalConversion.reasoning);           // Explanation
+console.log(result.optimalConversion.stayInCurrentBracket); // Amount to stay in bracket
+console.log(result.optimalConversion.fillNextBracket);     // Amount to fill next bracket
+console.log(result.optimalConversion.maxBeforeAGIPenalties); // IRMAA/NIIT thresholds
+
+// Bracket-filling strategy (unique feature!)
+console.log(result.bracketFillingStrategy.currentBracket);    // Current tax bracket
+console.log(result.bracketFillingStrategy.roomInBracket);     // Space left in current bracket
+console.log(result.bracketFillingStrategy.fillToTopOfBracket); // Conversion to fill bracket
+console.log(result.bracketFillingStrategy.nextBracketRate);   // Rate if you exceed
+console.log(result.bracketFillingStrategy.taxOnFillAmount);   // Tax if you fill bracket
+
+// Multi-year projections
+console.log(result.projections);                 // Year-by-year comparison
+// Each projection: { year, age, traditionalBalance, rothBalance, 
+//                    traditionalWithdrawal, rothWithdrawal,
+//                    traditionalTax, rothTax, cumulativeTaxSavings }
+
+// Scenario comparison (no conversion vs partial vs full)
+console.log(result.scenarioComparison);
+// { noConversion: {...}, partialConversion: {...}, fullConversion: {...}, 
+//   recommendation: 'partial', reasoning: '...' }
+
+// Warnings and recommendations
+console.log(result.warnings);                    // Important considerations
+console.log(result.recommendations);             // Personalized advice
+
+// Calculate tax impact for a specific conversion amount
+const taxImpact = calculateTaxImpact(
+  50000,              // Conversion amount
+  120000,             // Current taxable income
+  'married_joint',    // Filing status
+  0.05,               // State tax rate
+  2024                // Tax year
+);
+
+console.log(taxImpact.federalTax);              // $11,000
+console.log(taxImpact.totalTax);                // $13,500 (with state)
+console.log(taxImpact.effectiveRate);           // 27%
+
+// Calculate break-even point
+const breakEven = calculateBreakEvenRoth(
+  50000,              // Conversion amount
+  13500,              // Tax paid now
+  0.07,               // Expected return
+  0.22,               // Current marginal rate
+  0.15                // Expected retirement rate
+);
+
+console.log(breakEven.breakEvenYears);          // ~12 years
+console.log(breakEven.worthConverting);         // true
+
+// Calculate optimal conversion (bracket-filling)
+const optimal = calculateOptimalConversion(
+  120000,             // Current taxable income
+  'married_joint',    // Filing status
+  2024                // Tax year
+);
+
+console.log(optimal.recommendedAmount);         // $81,050 (fills 22% bracket)
+console.log(optimal.stayInCurrentBracket);      // Amount to stay in 22%
+
+// Calculate exact bracket-filling amount
+const bracketFill = calculateBracketFillingAmount(
+  120000,             // Current taxable income
+  'married_joint',    // Filing status
+  2024                // Tax year
+);
+
+console.log(bracketFill.roomInBracket);         // $81,050 until 24% bracket
+console.log(bracketFill.fillToTopOfBracket);    // $81,050 recommended conversion
+console.log(bracketFill.taxOnFillAmount);       // $17,831 (at 22%)
+
+// Generate multi-year projections
+const projections = generateProjections({
+  traditionalBalance: 500000,
+  rothBalance: 0,
+  conversionAmount: 50000,
+  currentAge: 55,
+  retirementAge: 65,
+  expectedReturnRate: 0.07,
+  currentTaxRate: 0.22,
+  retirementTaxRate: 0.15,
+  projectionYears: 20
+});
+
+console.log(projections);                       // 20-year projection array
+
+// Compare multiple conversion scenarios
+const scenarios = compareConversionScenarios({
+  traditionalBalance: 500000,
+  currentAge: 55,
+  retirementAge: 65,
+  currentTaxableIncome: 120000,
+  filingStatus: 'married_joint',
+  expectedReturnRate: 0.07,
+  currentStateTaxRate: 0.05,
+  retirementTaxRate: 0.15
+}, [0, 25000, 50000, 81050, 100000]);            // Compare different amounts
+
+console.log(scenarios.bestScenario);            // Index of optimal scenario
+console.log(scenarios.scenarios);               // Full results for each amount
+```
+
+**Filing Statuses**: `single`, `married_joint`, `married_separate`, `head_of_household`
+
+**Account Types**: `traditional_ira`, `401k`, `403b`, `sep_ira`, `simple_ira`
+
+**2024 Federal Tax Brackets (Married Filing Jointly)**:
+| Bracket | Income Range | Conversion Strategy |
+|---------|--------------|---------------------|
+| 10% | $0 - $23,200 | Convert up to bracket top |
+| 12% | $23,200 - $94,300 | Good conversion opportunity |
+| 22% | $94,300 - $201,050 | Common target bracket |
+| 24% | $201,050 - $383,900 | Consider if retirement rate is 22%+ |
+| 32%+ | $383,900+ | Usually avoid unless special circumstances |
+
+**Standard Deductions (2024)**:
+- Single: $14,600
+- Married Filing Jointly: $29,200
+- Married Filing Separately: $14,600
+- Head of Household: $21,900
+
+**When to Consider Roth Conversion**:
+- Lower income year (job loss, early retirement, sabbatical)
+- Expect higher tax rates in retirement
+- Want tax-free growth for heirs
+- Reducing future RMD burden
+- Years before RMDs begin (can spread conversions)
+
+**Key Thresholds to Watch**:
+- **IRMAA (Medicare Surcharges)**: Income > $103,000 (single) / $206,000 (married)
+- **NIIT (3.8% Net Investment Tax)**: Income > $200,000 (single) / $250,000 (married)
+- **Capital Gains 0% Rate**: Stay below 12% bracket for 0% LTCG
+
+**Features That Competitors Don't Have**:
+- **Bracket-filling strategy**: Exact amount to convert to fill current bracket
+- Multi-year projections comparing traditional vs Roth paths
+- Scenario comparison (no/partial/full conversion)
+- IRMAA and NIIT threshold warnings
+- State tax integration
+- Break-even analysis with years until benefit
+- Account type support (IRA, 401k, 403b, SEP, SIMPLE)
+- Tax payment source comparison (internal vs external)
+
 ### Debt Management
 
 #### 6. Debt Payoff Strategy
