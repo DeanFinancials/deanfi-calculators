@@ -269,6 +269,41 @@ export {
   compareFIREScenarios
 } from './fire/fireCalculator.js';
 
+// Savings Rate Calculator
+export {
+  type SavingsRateMethod,
+  type SavingsRateInputs,
+  type SavingsBreakdown,
+  type SavingsRateByMethod,
+  type FIREBenchmark,
+  type YearsToRetirementChartPoint,
+  type SavingsProjection,
+  type SavingsScenario as SavingsRateScenario,
+  type SavingsRateResult,
+  FIRE_BENCHMARKS,
+  DEFAULT_ASSUMPTIONS,
+  calculateGrossSavingsRate,
+  calculateNetSavingsRate,
+  calculatePostTaxAdjustedSavingsRate,
+  calculateYearsToFI,
+  quickYearsToFI,
+  generateYearsToRetirementChart,
+  calculateSavingsBreakdown,
+  calculateAllSavingsRates,
+  getBenchmarksWithStatus,
+  getCurrentAndNextTier,
+  generateSavingsProjections,
+  generateScenarios,
+  generateInsights as generateSavingsInsights,
+  generateWarnings as generateSavingsWarnings,
+  calculateSavingsRate as calculateSavingsRateAnalysis,
+  quickSavingsRate,
+  monthlySavingsForRate,
+  savingsRateForYearsToFI,
+  compareSavingsScenarios as compareSavingsRateScenarios,
+  getSavingsRateTable
+} from './fire/savingsRateCalculator.js';
+
 // 50/30/20 Budget Calculator
 export {
   type BudgetCategory,

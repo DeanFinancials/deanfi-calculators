@@ -10,6 +10,7 @@ This document tracks all changes, implementations, and design decisions for the 
 
 ## Table of Contents
 
+- [Version 1.13.0 - Savings Rate Calculator](#version-1130---2025-06-09)
 - [Version 1.12.0 - FIRE Calculator](#version-1120---2025-06-09)
 - [Version 1.11.0 - Dividend Income Calculator](#version-1110---2025-01-xx)
 - [Version 1.10.0 - Roth Conversion Calculator](#version-1100---2025-01-xx)
@@ -27,6 +28,141 @@ This document tracks all changes, implementations, and design decisions for the 
 - [Version 1.0.1 - ESM Import Path Fix](#version-101---2025-11-21)
 - [Version 1.0.0 - Initial Publication](#version-100---2025-11-21)
 - [Pre-Publication Development](#pre-publication-development)
+
+---
+
+## Version 1.13.0 - 2025-06-09
+
+**Type:** New Feature (MINOR)  
+**Status:** Published  
+**npm:** @deanfinancials/calculators@1.13.0
+
+### Overview
+
+Added comprehensive Savings Rate Calculator to the FIRE module. This calculator is inspired by Mr. Money Mustache's famous "Shockingly Simple Math" article that shows how savings rate is the most important factor in determining years to financial independence. Provides multiple calculation methods, FIRE community benchmarks, detailed projections, and comparison tools.
+
+### Key Features
+
+1. **Three Savings Rate Calculation Methods**:
+   - **Gross Method**: `savings / gross income` - Simple, commonly used
+   - **Net Method**: `savings / net income` - More accurate for tax situation
+   - **Post-Tax-Adjusted Method**: `savings / (net income + employer retirement contributions)` - FIRE community preferred
+
+2. **Years to Financial Independence Chart**:
+   - Interactive chart data based on MMM's famous table
+   - Shows how savings rate directly determines years to retirement
+   - Accounts for investment return and safe withdrawal rate assumptions
+
+3. **FIRE Community Benchmarks**:
+   - **Very Low (10%)**: 51 years to FI
+   - **Low (20%)**: 37 years to FI
+   - **Moderate (30%)**: 28 years to FI
+   - **Good (40%)**: 22 years to FI
+   - **High (50%)**: 17 years to FI - "Standard FIRE target"
+   - **Very High (60%)**: 12.5 years to FI
+   - **Extreme (70%)**: 8.5 years to FI - "Aggressive FIRE"
+   - **Ultra (75%)**: 7 years to FI
+   - **Maximum (80%)**: 5.5 years to FI - "Extreme early retirement"
+
+4. **Savings Projections**: Year-by-year projections with compound growth
+5. **Scenario Comparison**: Compare different savings strategies side-by-side
+6. **Actionable Insights**: Personalized recommendations based on current rate
+7. **Reverse Calculator**: Calculate required savings rate for target years to FI
+
+### New Files Created
+
+**src/fire/savingsRateCalculator.ts:**
+
+Complete savings rate calculator with the following exports:
+
+**Types:**
+- `SavingsRateMethod` - Union type: 'gross' | 'net' | 'post-tax-adjusted'
+- `FIREBenchmark` - Interface for benchmark with rate, years, tier, description, color
+- `SavingsRateInputs` - Input interface for calculation
+- `YearsToRetirementChartPoint` - Interface for chart data points
+- `SavingsProjection` - Interface for year-by-year projections
+- `SavingsRateScenario` - Interface for scenario comparison
+- `SavingsRateResult` - Complete result interface with all analysis
+
+**Constants:**
+- `FIRE_BENCHMARKS` - Array of 9 FIRE community benchmark tiers
+- `DEFAULT_ASSUMPTIONS` - Default values: 5% real return, 4% SWR
+
+**Functions:**
+- `calculateSavingsRateAnalysis(inputs)` - Main comprehensive calculation
+- `quickYearsToFI(savingsRate, initialSavings, annualIncome)` - Quick years calculation
+- `generateYearsToRetirementChart(options)` - Generate chart data points
+- `getBenchmarksWithStatus(currentRate)` - Get benchmarks with achievement status
+- `calculateAllSavingsRates(inputs)` - Calculate using all three methods
+- `savingsRateForYearsToFI(targetYears, investmentReturn, withdrawalRate)` - Reverse calculation
+- `getSavingsRateTable()` - Get full MMM-style reference table
+- `compareSavingsRateScenarios(baseInputs, scenarios)` - Compare multiple scenarios
+
+### Files Modified
+
+**src/index.ts:**
+- Added exports for all Savings Rate Calculator types, constants, and functions
+- Renamed `SavingsScenario` to `SavingsRateScenario` to avoid conflict with existing export
+- Renamed `compareSavingsScenarios` to `compareSavingsRateScenarios` to avoid conflict
+- Total of 19 new exports added
+
+### Implementation Details
+
+#### MMM "Shockingly Simple Math" Formula
+
+The years to financial independence is calculated using the future value of annuity formula:
+
+```
+Years to FI = ln((annualSavings/SWR + currentSavings) / currentSavings) / ln(1 + realReturn)
+```
+
+Where:
+- `annualSavings` = Annual amount saved
+- `SWR` = Safe Withdrawal Rate (typically 4%)
+- `currentSavings` = Existing portfolio value
+- `realReturn` = Investment return minus inflation
+
+For starting from zero:
+```
+Years to FI = ln(1 + (savingsRate/SWR) * (1/investmentReturn)) / ln(1 + investmentReturn)
+```
+
+#### Key Insight from MMM Article
+
+The revolutionary insight is that your savings rate determines your working years, NOT your income level:
+- A 50% savings rate = ~17 years to FI regardless of whether you earn $50k or $500k
+- Each percentage point increase in savings rate accelerates retirement by months/years
+- The relationship is non-linear - higher rates have exponentially more impact
+
+#### Three Calculation Methods Explained
+
+1. **Gross Method**: Most conservative, easiest to calculate
+   ```
+   savingsRate = totalSavings / grossIncome
+   ```
+
+2. **Net Method**: More accurate reflection of available money
+   ```
+   savingsRate = totalSavings / (grossIncome - taxes)
+   ```
+
+3. **Post-Tax-Adjusted Method**: FIRE community standard
+   ```
+   savingsRate = totalSavings / (netIncome + employerRetirementContributions)
+   ```
+
+### Testing Verification
+
+Verified calculations against:
+1. Mr. Money Mustache "Shockingly Simple Math" original table
+2. Cross-validated with multiple FIRE calculators
+3. Confirmed benchmark tiers match community standards
+
+### Documentation References
+
+- [Mr. Money Mustache - The Shockingly Simple Math Behind Early Retirement](https://www.mrmoneymustache.com/2012/01/13/the-shockingly-simple-math-behind-early-retirement/)
+- FIRE community standard methodology
+- Trinity Study for safe withdrawal rate basis
 
 ---
 

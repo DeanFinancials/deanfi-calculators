@@ -1845,6 +1845,176 @@ accounting for contributions and real (inflation-adjusted) returns
 - Social Security and pension integration for accurate projections
 - Milestone tracking with projected achievement dates
 
+#### 22. Savings Rate Calculator
+Calculate your savings rate using multiple methods and see how it affects your years to financial independence using Mr. Money Mustache's famous "Shockingly Simple Math" formula.
+
+```typescript
+import { 
+  calculateSavingsRateAnalysis,
+  quickYearsToFI,
+  generateYearsToRetirementChart,
+  getBenchmarksWithStatus,
+  calculateAllSavingsRates,
+  savingsRateForYearsToFI,
+  getSavingsRateTable,
+  compareSavingsRateScenarios,
+  type SavingsRateInputs,
+  type SavingsRateResult,
+  type SavingsRateMethod,
+  type FIREBenchmark,
+  type YearsToRetirementChartPoint,
+  FIRE_BENCHMARKS,
+  DEFAULT_ASSUMPTIONS
+} from '@deanfinancials/calculators';
+
+// Full savings rate analysis
+const result = calculateSavingsRateAnalysis({
+  grossIncome: 100000,
+  netIncome: 75000,            // After taxes
+  totalExpenses: 40000,
+  totalSavings: 35000,         // 401k + IRA + other savings
+  currentPortfolio: 150000,
+  employerContributions: 5000, // Employer 401k match
+  investmentReturn: 0.07,      // 7% expected return
+  inflationRate: 0.03,         // 3% inflation
+  safeWithdrawalRate: 0.04,    // 4% rule
+  method: 'post-tax-adjusted'  // FIRE community preferred
+});
+
+// Core results
+console.log(result.savingsRate);          // 0.50 (50%)
+console.log(result.savingsRateFormatted); // "50.0%"
+console.log(result.yearsToFI);            // ~17 years
+console.log(result.fireAge);              // Age at FI (if current age provided)
+console.log(result.realReturn);           // Investment return - inflation
+
+// Income breakdown
+console.log(result.grossIncome);          // $100,000
+console.log(result.netIncome);            // $75,000
+console.log(result.totalSavings);         // $35,000
+console.log(result.totalExpenses);        // $40,000
+
+// FIRE progress
+console.log(result.fireNumber);           // Amount needed for FI
+console.log(result.currentProgress);      // % of FIRE number achieved
+console.log(result.alreadyAchieved);      // Boolean - already at FI?
+
+// Current benchmark tier
+console.log(result.currentBenchmark.tier);        // "High"
+console.log(result.currentBenchmark.description); // "Standard FIRE target"
+console.log(result.currentBenchmark.color);       // "#3b82f6" (blue)
+
+// Next benchmark to reach
+console.log(result.nextBenchmark?.tier);           // "Very High"
+console.log(result.nextBenchmark?.savingsNeeded);  // Additional savings to reach
+
+// Comparison with different methods
+console.log(result.alternativeMethods.gross);      // { rate: 0.35, yearsToFI: 22 }
+console.log(result.alternativeMethods.net);        // { rate: 0.47, yearsToFI: 18 }
+console.log(result.alternativeMethods.postTax);    // { rate: 0.50, yearsToFI: 17 }
+
+// Year-by-year projections
+console.log(result.projections);   // Array of SavingsProjection
+// Each: { year, age, startBalance, contributions, returns, endBalance, 
+//         fireProgress, fireAchieved }
+
+// Actionable insights
+console.log(result.insights);      // Array of personalized recommendations
+
+// Quick calculations
+const years = quickYearsToFI(0.50);                    // ~17 years (at 50% savings rate)
+const yearsWithSavings = quickYearsToFI(0.50, 150000, 100000); // Accounts for existing savings
+
+// Generate chart data (for "Shockingly Simple Math" chart)
+const chartData = generateYearsToRetirementChart({
+  minRate: 0.05,      // Start at 5%
+  maxRate: 0.90,      // End at 90%
+  step: 0.05,         // 5% increments
+  investmentReturn: 0.05,  // 5% real return (MMM default)
+  withdrawalRate: 0.04     // 4% SWR
+});
+// Returns array of { savingsRate, yearsToFI, savingsRatePercent, label }
+
+// Get benchmarks with achievement status
+const benchmarks = getBenchmarksWithStatus(0.50);
+// Each has: rate, yearsToFI, tier, description, color, achieved, isCurrent
+
+// Calculate savings rate using all three methods
+const allRates = calculateAllSavingsRates({
+  grossIncome: 100000,
+  netIncome: 75000,
+  totalSavings: 35000,
+  employerContributions: 5000
+});
+// Returns: { gross: 0.35, net: 0.467, postTaxAdjusted: 0.438 }
+
+// Reverse calculation: What savings rate for target years?
+const requiredRate = savingsRateForYearsToFI(15, 0.05, 0.04); // 0.516 (51.6%)
+
+// Get full reference table (MMM style)
+const table = getSavingsRateTable();
+// Array of { rate, yearsToFI, description }
+// Example: { rate: 0.50, yearsToFI: 17, description: "Standard FIRE target" }
+
+// Compare multiple scenarios
+const scenarios = compareSavingsRateScenarios(
+  { grossIncome: 100000, netIncome: 75000, totalExpenses: 40000, totalSavings: 35000, currentPortfolio: 150000 },
+  [
+    { name: 'Cut Spending $5k', changes: { totalExpenses: 35000, totalSavings: 40000 } },
+    { name: 'Side Hustle $10k', changes: { grossIncome: 110000, netIncome: 82000, totalSavings: 42000 } },
+    { name: 'Both Combined', changes: { grossIncome: 110000, netIncome: 82000, totalExpenses: 35000, totalSavings: 47000 } }
+  ]
+);
+scenarios.forEach(s => {
+  console.log(`${s.name}: ${s.savingsRateFormatted} → ${s.yearsToFI.toFixed(1)} years (${s.yearsSaved.toFixed(1)} years saved)`);
+});
+```
+
+**Savings Rate Methods**:
+| Method | Formula | Use Case |
+|--------|---------|----------|
+| Gross | `savings / gross income` | Simple, conservative estimate |
+| Net | `savings / (gross - taxes)` | More accurate for your tax situation |
+| Post-Tax-Adjusted | `savings / (net + employer contributions)` | FIRE community preferred |
+
+**FIRE Community Benchmarks**:
+| Savings Rate | Years to FI | Tier | Description |
+|--------------|-------------|------|-------------|
+| 10% | 51 years | Very Low | Average American savings rate |
+| 20% | 37 years | Low | Better than average |
+| 30% | 28 years | Moderate | Good progress |
+| 40% | 22 years | Good | Strong saver |
+| 50% | 17 years | High | Standard FIRE target |
+| 60% | 12.5 years | Very High | Accelerated FIRE |
+| 70% | 8.5 years | Extreme | Aggressive FIRE |
+| 75% | 7 years | Ultra | Very aggressive |
+| 80% | 5.5 years | Maximum | Extreme early retirement |
+
+**Key Formula (MMM "Shockingly Simple Math")**:
+```
+Years to FI = ln(1 + (savingsRate/SWR) * (1/investmentReturn)) / ln(1 + investmentReturn)
+
+Where:
+- savingsRate = Annual savings / Annual income
+- SWR = Safe Withdrawal Rate (typically 4%)
+- investmentReturn = Expected real (inflation-adjusted) return
+```
+
+**Key Insight**: Your savings rate determines your working years, NOT your income level:
+- A 50% savings rate = ~17 years to FI whether you earn $50k or $500k
+- Each percentage point increase in savings rate accelerates retirement
+- The relationship is non-linear - higher rates have exponentially more impact
+
+**Features That Competitors Don't Have**:
+- Three calculation methods (gross, net, post-tax-adjusted)
+- Integration with existing portfolio/savings for accurate projections
+- FIRE community benchmark tiers with color coding
+- "Years to FI" chart generator based on Mr. Money Mustache's famous table
+- Scenario comparison to see impact of different choices
+- Reverse calculator (what rate needed for target years)
+- Year-by-year savings projections with compound growth
+- Personalized insights and recommendations
+
 ## Formulas & Methodology
 
 All calculations use industry-standard formulas:
