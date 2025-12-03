@@ -1,6 +1,6 @@
 {
   "name": "@deanfinancials/calculators",
-  "version": "1.13.0",
+  "version": "1.14.0",
   "description": "Transparent financial calculator library used by DeanFinancials.com",
   "type": "module",
   "main": "dist/index.js",
