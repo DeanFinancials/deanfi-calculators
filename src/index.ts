@@ -304,6 +304,43 @@ export {
   getSavingsRateTable
 } from './fire/savingsRateCalculator.js';
 
+// Safe Withdrawal Rate (SWR) Calculator
+export {
+  type PortfolioAllocation,
+  type SWRWithdrawalStrategy,
+  type SimulationMethod,
+  type SWRInputs,
+  type SWRYearlyData,
+  type SimulationResult,
+  type WithdrawalRateSuccess,
+  type TimeHorizonComparison,
+  type SequenceRiskAnalysis,
+  type WhatIfScenario,
+  type SWRResult,
+  HISTORICAL_RETURNS,
+  TRINITY_STUDY_RATES,
+  EXPECTED_RETURNS,
+  SWR_COLORS,
+  SCENARIO_COLORS,
+  getBlendedReturn,
+  generateRandomReturn,
+  percentile,
+  standardDeviation,
+  runHistoricalSimulation,
+  runMonteCarloSimulation,
+  runAllSimulations,
+  calculateWithdrawalRateComparison,
+  calculateTimeHorizonComparison,
+  analyzeSequenceRisk,
+  generateWhatIfScenarios,
+  calculateSWR,
+  quickWithdrawalRate,
+  quickSuccessRate,
+  calculateSafeWithdrawal,
+  calculatePortfolioNeeded,
+  compareSWRScenarios
+} from './fire/swrCalculator.js';
+
 // 50/30/20 Budget Calculator
 export {
   type BudgetCategory,

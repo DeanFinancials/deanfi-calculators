@@ -2015,7 +2015,172 @@ Where:
 - Year-by-year savings projections with compound growth
 - Personalized insights and recommendations
 
-## Formulas & Methodology
+#### 23. Safe Withdrawal Rate (SWR) Calculator
+Comprehensive analysis of portfolio withdrawal strategies based on the Trinity Study, historical market data, and Monte Carlo simulation. Features sequence of returns risk visualization, variable withdrawal strategies, and multi-scenario comparison.
+
+```typescript
+import { 
+  calculateSWR,
+  quickSuccessRate,
+  quickWithdrawalRate,
+  calculateSafeWithdrawal,
+  calculatePortfolioNeeded,
+  calculateWithdrawalRateComparison,
+  calculateTimeHorizonComparison,
+  analyzeSequenceRisk,
+  generateWhatIfScenarios,
+  compareSWRScenarios,
+  type SWRInputs,
+  type SWRResult,
+  type PortfolioAllocation,
+  type SWRWithdrawalStrategy,
+  type SimulationMethod,
+  TRINITY_STUDY_RATES,
+  HISTORICAL_RETURNS,
+  SWR_COLORS
+} from '@deanfinancials/calculators';
+
+// Full SWR analysis
+const result = calculateSWR({
+  portfolioValue: 1000000,           // $1M portfolio
+  annualWithdrawal: 40000,           // $40,000/year (4%)
+  retirementYears: 30,               // 30-year retirement
+  allocation: '60-40',               // 60% stocks, 40% bonds
+  strategy: 'fixed',                 // Traditional 4% rule
+  simulationMethod: 'historical',    // Use historical data
+  inflationRate: 0.03                // 3% inflation
+});
+
+// Core results
+console.log(result.withdrawalRate);              // 0.04 (4%)
+console.log(result.withdrawalRateLabel);         // "4.0%"
+console.log(result.successRate);                 // 95% (historical success)
+console.log(result.successfulSimulations);       // 65 out of 68 scenarios succeeded
+console.log(result.totalSimulations);            // 68 historical starting years
+
+// Outcome distribution
+console.log(result.averageFinalBalance);         // Average ending portfolio
+console.log(result.medianFinalBalance);          // Median ending portfolio
+console.log(result.percentileOutcomes.p10);      // 10th percentile (pessimistic)
+console.log(result.percentileOutcomes.p50);      // 50th percentile (median)
+console.log(result.percentileOutcomes.p90);      // 90th percentile (optimistic)
+
+// Withdrawal rate comparison (3%, 3.5%, 4%, 4.5%, 5%)
+console.log(result.withdrawalRateComparison);    // Success rates at each level
+// Each: { withdrawalRate, label, successRate, medianFinalBalance, percentile10, ... }
+
+console.log(result.maxSafeWithdrawalRate);       // Highest rate with 95%+ success
+console.log(result.recommendedWithdrawalRate);   // Based on your horizon
+
+// Time horizon analysis (30, 40, 50 years)
+console.log(result.timeHorizonComparison);       // Success rates by horizon
+// Each: { years, successRates: [...], recommendedSWR, description }
+
+// Sequence of returns risk analysis
+console.log(result.sequenceRiskAnalysis.bestStartingYears);   // Best years to retire
+console.log(result.sequenceRiskAnalysis.worstStartingYears);  // Worst years to retire
+console.log(result.sequenceRiskAnalysis.earlyReturnsImpact);  // Impact of first 5 years
+console.log(result.sequenceRiskAnalysis.recommendations);     // Risk mitigation tips
+
+// Individual simulations for visualization
+console.log(result.worstCase);                   // Worst historical scenario
+console.log(result.bestCase);                    // Best historical scenario
+console.log(result.medianCase);                  // Median scenario
+console.log(result.simulations);                 // All simulations
+
+// Strategy comparison
+console.log(result.strategyComparison);          // Compare fixed vs guardrails vs dynamic
+// Each: { strategy, successRate, averageWithdrawal, volatility }
+
+// UNIQUE FEATURE: What-If Scenario Comparator
+console.log(result.whatIfScenarios);             // Compare 4 scenarios simultaneously
+// Each: { name, successRate, averageFinalBalance, worstCaseYears, insights, color }
+
+// Recommendations and warnings
+console.log(result.recommendations);             // Personalized advice
+console.log(result.warnings);                    // Risk warnings
+console.log(result.summary);                     // Human-readable summary
+
+// Quick utility functions
+const rate = quickWithdrawalRate(40000, 1000000);    // 0.04 (4%)
+const success = quickSuccessRate(0.04, '60-40', 30); // ~95%
+
+const safeWithdrawal = calculateSafeWithdrawal(1000000, 0.04);
+console.log(safeWithdrawal.annual);              // $40,000
+console.log(safeWithdrawal.monthly);             // $3,333
+
+const portfolioNeeded = calculatePortfolioNeeded(50000, 0.04);
+console.log(portfolioNeeded);                    // $1,250,000
+
+// Compare multiple scenarios quickly
+const scenarios = compareSWRScenarios(
+  { portfolioValue: 1000000, annualWithdrawal: 40000, retirementYears: 30, allocation: '60-40' },
+  [
+    { name: '3.5% Rate', changes: { annualWithdrawal: 35000 } },
+    { name: '50/50 Allocation', changes: { allocation: '50-50' } },
+    { name: 'Guardrails', changes: { strategy: 'guardrails' } }
+  ]
+);
+scenarios.forEach(s => console.log(`${s.name}: ${s.successRate.toFixed(0)}% success`));
+
+// Generate What-If scenarios for visualization
+const whatIfs = generateWhatIfScenarios(
+  { portfolioValue: 1000000, annualWithdrawal: 40000, retirementYears: 30, allocation: '60-40' }
+);
+whatIfs.forEach(scenario => {
+  console.log(`${scenario.name}: ${scenario.successRate.toFixed(0)}% success, median ${scenario.medianFinalBalance}`);
+});
+```
+
+**Portfolio Allocations**: `100-0`, `75-25`, `60-40`, `50-50`, `25-75`, `0-100` (stocks-bonds)
+
+**Withdrawal Strategies**:
+| Strategy | Description |
+|----------|-------------|
+| `fixed` | Traditional 4% rule - initial withdrawal adjusted for inflation |
+| `percentage` | Fixed percentage of current portfolio each year |
+| `guardrails` | Guyton-Klinger approach - adjust when hitting upper/lower limits |
+| `dynamic` | Variable percentage based on portfolio performance |
+| `floor-ceiling` | Min/max withdrawal limits with adjustments |
+
+**Simulation Methods**:
+| Method | Description |
+|--------|-------------|
+| `historical` | Tests every starting year from 1926 (most realistic) |
+| `monte-carlo` | Random sampling with market assumptions (10,000 runs) |
+
+**Trinity Study Success Rates (30-Year, 60/40 Portfolio)**:
+| Withdrawal Rate | Success Rate | Description |
+|-----------------|--------------|-------------|
+| 3.0% | 100% | Very conservative, leaves large legacy |
+| 3.5% | 100% | Conservative with good margin |
+| 4.0% | 95% | The "4% Rule" - standard guideline |
+| 4.5% | 89% | Moderately aggressive |
+| 5.0% | 78% | Aggressive - higher failure risk |
+
+**Time Horizon Impact**:
+| Retirement Length | Recommended SWR | Notes |
+|-------------------|-----------------|-------|
+| 30 years | 4.0% | Traditional retirement |
+| 40 years | 3.5% | Early retirement / FIRE |
+| 50 years | 3.0% | Very early retirement |
+
+**Sequence of Returns Risk**:
+- The order of returns matters as much as the average
+- Poor returns early in retirement are more damaging
+- Best mitigation: bond tent, cash buffer, flexible spending
+
+**Features That Competitors Don't Have**:
+- **What-If Scenario Comparator**: Compare up to 4 scenarios simultaneously with visual timeline
+- Historical simulation using actual market data from 1926
+- Monte Carlo simulation with 10,000 runs
+- Sequence of returns risk analysis with best/worst starting years
+- Variable withdrawal strategies (guardrails, dynamic, floor-ceiling)
+- Time horizon comparison (30/40/50 years)
+- Strategy comparison (fixed vs percentage vs guardrails vs dynamic)
+- Detailed percentile outcomes (P10, P25, P50, P75, P90)
+- Year-by-year simulation data for visualization
+- Personalized recommendations based on your specific inputs
 
 All calculations use industry-standard formulas:
 

@@ -10,6 +10,7 @@ This document tracks all changes, implementations, and design decisions for the 
 
 ## Table of Contents
 
+- [Version 1.14.0 - Safe Withdrawal Rate Calculator](#version-1140---2025-12-03)
 - [Version 1.13.0 - Savings Rate Calculator](#version-1130---2025-06-09)
 - [Version 1.12.0 - FIRE Calculator](#version-1120---2025-06-09)
 - [Version 1.11.0 - Dividend Income Calculator](#version-1110---2025-01-xx)
@@ -28,6 +29,153 @@ This document tracks all changes, implementations, and design decisions for the 
 - [Version 1.0.1 - ESM Import Path Fix](#version-101---2025-11-21)
 - [Version 1.0.0 - Initial Publication](#version-100---2025-11-21)
 - [Pre-Publication Development](#pre-publication-development)
+
+---
+
+## Version 1.14.0 - 2025-12-03
+
+**Type:** New Feature (MINOR)  
+**Status:** Published  
+**npm:** @deanfinancials/calculators@1.14.0
+
+### Overview
+
+Added comprehensive Safe Withdrawal Rate (SWR) Calculator to the FIRE module. This calculator provides Trinity Study-based analysis, historical simulation using market data from 1926, Monte Carlo simulation, sequence of returns risk analysis, and multiple withdrawal strategies. The unique feature is the "What-If Scenario Comparator" allowing users to compare up to 4 scenarios simultaneously.
+
+### Key Features
+
+1. **Historical Success Rate Analysis**:
+   - Tests every starting year from 1926-present
+   - Based on actual S&P 500 and bond market returns
+   - Trinity Study success rates for different withdrawal rates
+
+2. **Monte Carlo Simulation**:
+   - 10,000 random simulations using expected returns and volatility
+   - Portfolio allocation-based return assumptions
+   - Comprehensive outcome distribution analysis
+
+3. **Multiple Withdrawal Rates**:
+   - Compare 3%, 3.5%, 4%, 4.5%, 5% withdrawal rates
+   - Success rate at each level
+   - Percentile outcomes (P10, P25, P50, P75, P90)
+
+4. **Variable Withdrawal Strategies**:
+   - **Fixed**: Traditional 4% rule - inflation-adjusted
+   - **Percentage**: Fixed % of current portfolio
+   - **Guardrails**: Guyton-Klinger approach with upper/lower limits
+   - **Dynamic**: Variable % based on portfolio performance
+   - **Floor-Ceiling**: Min/max withdrawal constraints
+
+5. **Time Horizon Comparison**:
+   - 30-year (traditional retirement)
+   - 40-year (early retirement / FIRE)
+   - 50-year (very early retirement)
+   - Recommended SWR for each horizon
+
+6. **Sequence of Returns Risk Analysis**:
+   - Best/worst historical starting years
+   - Impact of first 5 years returns
+   - Risk mitigation recommendations
+
+7. **UNIQUE FEATURE: What-If Scenario Comparator**:
+   - Compare up to 4 scenarios simultaneously
+   - Each scenario shows success rate, median outcome, worst case
+   - Color-coded for visualization
+   - Includes scenario-specific insights
+
+### New Files Created
+
+**src/fire/swrCalculator.ts:**
+
+Complete SWR calculator with the following exports:
+
+**Types:**
+- `PortfolioAllocation` - Union: '100-0' | '75-25' | '60-40' | '50-50' | '25-75' | '0-100'
+- `SWRWithdrawalStrategy` - Union: 'fixed' | 'percentage' | 'guardrails' | 'dynamic' | 'floor-ceiling'
+- `SimulationMethod` - Union: 'historical' | 'monte-carlo'
+- `SWRInputs` - Input interface for calculation
+- `SWRYearlyData` - Year-by-year simulation data
+- `SimulationResult` - Single simulation outcome
+- `WithdrawalRateSuccess` - Success metrics at a withdrawal rate
+- `TimeHorizonComparison` - Comparison across time horizons
+- `SequenceRiskAnalysis` - Sequence of returns risk data
+- `WhatIfScenario` - What-If comparison scenario
+- `SWRResult` - Complete result interface
+
+**Constants:**
+- `HISTORICAL_RETURNS` - Stocks and bonds returns 1926-2023
+- `TRINITY_STUDY_RATES` - Success rates by allocation and withdrawal rate
+- `EXPECTED_RETURNS` - Mean/stdDev by portfolio allocation
+- `SWR_COLORS` - Color coding for success rate visualization
+- `SCENARIO_COLORS` - Colors for What-If scenarios
+
+**Functions:**
+- `calculateSWR(inputs)` - Main comprehensive calculation
+- `runHistoricalSimulation(inputs, startYearIndex)` - Single historical simulation
+- `runMonteCarloSimulation(inputs, simulationId)` - Single Monte Carlo run
+- `runAllSimulations(inputs)` - Run all simulations (historical or Monte Carlo)
+- `calculateWithdrawalRateComparison(inputs, rates)` - Compare multiple withdrawal rates
+- `calculateTimeHorizonComparison(inputs, horizons)` - Compare time horizons
+- `analyzeSequenceRisk(simulations)` - Analyze sequence of returns risk
+- `generateWhatIfScenarios(baseInputs, scenarios)` - Generate What-If comparisons
+- `quickWithdrawalRate(annualWithdrawal, portfolioValue)` - Quick rate calculation
+- `quickSuccessRate(withdrawalRate, allocation, years)` - Quick Trinity Study lookup
+- `calculateSafeWithdrawal(portfolioValue, withdrawalRate)` - Annual/monthly amounts
+- `calculatePortfolioNeeded(desiredAnnualIncome, withdrawalRate)` - Portfolio for income
+- `compareSWRScenarios(baseInputs, scenarios)` - Quick scenario comparison
+
+**Utility Functions:**
+- `getBlendedReturn(allocation, yearIndex)` - Blended stock/bond return
+- `generateRandomReturn(mean, stdDev)` - Box-Muller normal distribution
+- `percentile(arr, p)` - Calculate percentile from array
+- `standardDeviation(arr)` - Calculate standard deviation
+
+### Files Modified
+
+**src/index.ts:**
+- Added exports for all SWR calculator types, constants, and functions
+
+**README.md:**
+- Added complete documentation for SWR Calculator (Section 23 in FIRE module)
+- Includes code examples, type definitions, strategy explanations
+- Documents unique What-If Scenario Comparator feature
+
+**CHANGELOG_AND_IMPLEMENTATION_LOG.md:**
+- Added Version 1.14.0 entry
+
+### Competition Research
+
+Analyzed competitors before implementation:
+- **engaging-data.com**: Historical cycles, Monte Carlo, sensitivity analysis
+- **FIRECalc**: Historical simulation since 1871
+- **Portfolio Visualizer**: Monte Carlo with multiple withdrawal models
+- **cFIREsim**: Advanced simulations
+- **Early Retirement Now**: 60+ part SWR series, CAPE-based rules
+- **ThePoorSwiss**: Trinity Study breakdown
+
+Our unique differentiator: **What-If Scenario Comparator** - compare 4 scenarios simultaneously with visual timeline showing when each fails/succeeds.
+
+### Usage Example
+
+```typescript
+import { calculateSWR, quickSuccessRate } from '@deanfinancials/calculators';
+
+// Full analysis
+const result = calculateSWR({
+  portfolioValue: 1000000,
+  annualWithdrawal: 40000,
+  retirementYears: 30,
+  allocation: '60-40',
+  strategy: 'fixed'
+});
+
+console.log(result.successRate);        // ~95%
+console.log(result.maxSafeWithdrawalRate); // 0.04
+console.log(result.whatIfScenarios);    // 4 scenario comparisons
+
+// Quick lookup
+const success = quickSuccessRate(0.04, '60-40', 30); // ~95%
+```
 
 ---
 
