@@ -424,3 +424,62 @@ export {
   compareStates,
   getTaxBracketInfo
 } from './budget/paycheckCalculator.js';
+
+// Financial Goals Monte Carlo Simulation Calculator
+export {
+  // Types
+  type SimulationModel as FinancialGoalsSimulationModel,
+  type DistributionType,
+  type TaxTreatment,
+  type RebalancingFrequency,
+  type InflationModel,
+  type CashflowType,
+  type LifeStage,
+  type AssetClass,
+  type PortfolioAllocationDef,
+  type GlidePath,
+  type CashflowGoal,
+  type LifeStageConfig,
+  type FinancialGoalsInputs,
+  type YearlySimulationData,
+  type SimulationRun,
+  type PercentileOutcomes,
+  type SuccessAnalysis,
+  type SequenceRiskAnalysis as FinancialGoalsSequenceRiskAnalysis,
+  type LifeStageScenario,
+  type SensitivityResult,
+  type FinancialGoalsResult,
+  // Constants
+  HISTORICAL_DATA,
+  DEFAULT_ASSET_ASSUMPTIONS,
+  SCENARIO_COLORS as FINANCIAL_GOALS_SCENARIO_COLORS,
+  // Utility Functions
+  generateStandardNormal,
+  generateNormalReturn,
+  generateLogNormalReturn,
+  generateTDistributionReturn,
+  percentile as financialGoalsPercentile,
+  mean as financialGoalsMean,
+  standardDeviation as financialGoalsStdDev,
+  correlation,
+  generateCorrelatedReturns,
+  getAllocationAtYear,
+  // Return Generation
+  generateHistoricalReturns,
+  generateForecastedReturns,
+  generateParameterizedReturns,
+  // Simulation Functions
+  runSingleSimulation,
+  analyzeSequenceOfReturnsRisk,
+  generateLifeStageScenarios,
+  runSensitivityAnalysis,
+  generateRecommendations as generateFinancialGoalsRecommendations,
+  generateWarnings as generateFinancialGoalsWarnings,
+  // Main Calculation
+  calculateFinancialGoals,
+  // Quick Utilities
+  quickSuccessProbability,
+  calculateRequiredPortfolio,
+  compareFinancialScenarios,
+  calculateYearsToFI as calculateYearsToFIGoals
+} from './fire/financialGoals.js';

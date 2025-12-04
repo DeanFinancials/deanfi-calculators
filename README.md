@@ -2182,6 +2182,320 @@ whatIfs.forEach(scenario => {
 - Year-by-year simulation data for visualization
 - Personalized recommendations based on your specific inputs
 
+#### 24. Financial Goals Monte Carlo Calculator
+Advanced Monte Carlo simulation for long-term financial goal planning. Features 4 return models (historical, forecasted, statistical, parameterized), multiple cashflow goals with life stages, linear glide path transitions, and comprehensive sequence of returns risk analysis. Inspired by Portfolio Visualizer's Monte Carlo simulation.
+
+```typescript
+import { 
+  calculateFinancialGoals,
+  quickFinancialGoalsSuccessProbability,
+  calculateRequiredPortfolioForGoals,
+  calculateYearsToFinancialIndependence,
+  generateLifeStageScenarioComparison,
+  type FinancialGoalsInputs,
+  type FinancialGoalsResult,
+  type FinancialGoalsSimulationModel,
+  type FinancialGoalsCashflowGoal,
+  type FinancialGoalsLifeStage,
+  type FinancialGoalsGlidePath,
+  type FinancialGoalsDistributionType,
+  type FinancialGoalsAssetAssumptions,
+  FINANCIAL_GOALS_HISTORICAL_DATA,
+  FINANCIAL_GOALS_DEFAULT_ASSET_ASSUMPTIONS,
+  FINANCIAL_GOALS_SCENARIO_COLORS
+} from '@deanfinancials/calculators';
+
+// Full Financial Goals Monte Carlo Analysis
+const result = calculateFinancialGoals({
+  // Initial conditions
+  initialPortfolioValue: 500000,      // Starting portfolio value
+  currentAge: 35,                     // Your current age
+  targetAge: 65,                      // Age for final goal
+  
+  // Simulation settings
+  simulationModel: 'historical',      // Use historical returns (1926-2023)
+  numSimulations: 10000,              // Number of Monte Carlo runs
+  
+  // Asset allocation with glide path
+  stockAllocation: 0.80,              // 80% stocks
+  bondAllocation: 0.20,               // 20% bonds
+  glidePath: {
+    enabled: true,
+    startAllocation: { stocks: 0.80, bonds: 0.20 },
+    endAllocation: { stocks: 0.40, bonds: 0.60 },
+    transitionStartAge: 55,
+    transitionEndAge: 65,
+    type: 'linear'                    // Linear transition
+  },
+  
+  // Life stages with different income/expense patterns
+  lifeStages: [
+    {
+      name: 'Accumulation',
+      startAge: 35,
+      endAge: 55,
+      annualContribution: 50000,
+      annualWithdrawal: 0,
+      inflationAdjusted: true
+    },
+    {
+      name: 'Pre-Retirement',
+      startAge: 55,
+      endAge: 65,
+      annualContribution: 30000,
+      annualWithdrawal: 0,
+      inflationAdjusted: true
+    },
+    {
+      name: 'Retirement',
+      startAge: 65,
+      endAge: 95,
+      annualContribution: 0,
+      annualWithdrawal: 60000,
+      inflationAdjusted: true
+    }
+  ],
+  
+  // Financial goals to fund
+  cashflowGoals: [
+    {
+      name: 'College Fund',
+      targetAge: 53,
+      amount: 150000,
+      inflationAdjusted: true,
+      priority: 1
+    },
+    {
+      name: 'Home Upgrade',
+      targetAge: 50,
+      amount: 100000,
+      inflationAdjusted: true,
+      priority: 2
+    }
+  ],
+  
+  // Inflation assumptions
+  inflationRate: 0.03,                // 3% inflation
+  inflationVolatility: 0.01           // 1% volatility
+});
+
+// Core results
+console.log(result.successProbability);           // 87.3% (probability of meeting all goals)
+console.log(result.partialSuccessProbability);    // 94.2% (at least some goals met)
+console.log(result.medianFinalBalance);           // Median ending portfolio
+console.log(result.averageFinalBalance);          // Average ending portfolio
+
+// Percentile outcomes
+console.log(result.percentileOutcomes.p5);        // 5th percentile (pessimistic)
+console.log(result.percentileOutcomes.p25);       // 25th percentile
+console.log(result.percentileOutcomes.p50);       // 50th percentile (median)
+console.log(result.percentileOutcomes.p75);       // 75th percentile
+console.log(result.percentileOutcomes.p95);       // 95th percentile (optimistic)
+
+// Goal achievement analysis
+result.goalAchievementRates.forEach(goal => {
+  console.log(`${goal.name}: ${goal.achievementRate.toFixed(1)}% success`);
+  console.log(`  Average funding: ${goal.averageFundingAmount.toFixed(0)}`);
+  console.log(`  Years achieved: ${goal.yearsAchieved}/${goal.totalSimulations}`);
+});
+
+// Sequence of returns risk analysis
+console.log(result.sequenceRiskAnalysis.impactScore);          // 0-100 impact score
+console.log(result.sequenceRiskAnalysis.earlyYearsCorrelation);// How early returns affect outcomes
+console.log(result.sequenceRiskAnalysis.criticalPeriod);       // "Ages 35-45" most critical
+console.log(result.sequenceRiskAnalysis.recommendations);      // Risk mitigation strategies
+
+// Year-by-year projections for visualization
+result.yearlyProjections.forEach(year => {
+  console.log(`Age ${year.age}: $${year.medianBalance.toFixed(0)} median`);
+  console.log(`  Range: $${year.p10Balance.toFixed(0)} - $${year.p90Balance.toFixed(0)}`);
+  console.log(`  Survival: ${year.survivalRate.toFixed(1)}%`);
+});
+
+// Individual simulation paths for charting
+console.log(result.worstCase);                    // Worst simulation path
+console.log(result.bestCase);                     // Best simulation path
+console.log(result.medianCase);                   // Median simulation path
+console.log(result.simulations);                  // All simulation paths (if requested)
+
+// UNIQUE FEATURE: Life Stage Scenario Comparator
+console.log(result.lifeStageScenarios);           // Compare up to 4 life scenarios
+// Each: { name, description, successProbability, medianFinalBalance, insights, color }
+
+// Sensitivity analysis
+console.log(result.sensitivityAnalysis);          // How inputs affect outcomes
+// { returnSensitivity, withdrawalSensitivity, inflationSensitivity, sequenceSensitivity }
+
+// Recommendations and insights
+console.log(result.recommendations);              // Personalized advice
+console.log(result.warnings);                     // Risk warnings
+console.log(result.summary);                      // Human-readable summary
+
+// ===== Using Different Simulation Models =====
+
+// FORECASTED RETURNS: User-specified mean/stddev
+const forecastedResult = calculateFinancialGoals({
+  initialPortfolioValue: 500000,
+  currentAge: 35,
+  targetAge: 65,
+  simulationModel: 'forecasted',
+  forecastedReturns: {
+    stocksMean: 0.07,      // 7% expected stock return
+    stocksStdDev: 0.15,    // 15% volatility
+    bondsMean: 0.03,       // 3% expected bond return
+    bondsStdDev: 0.05      // 5% volatility
+  },
+  stockAllocation: 0.70,
+  bondAllocation: 0.30,
+  lifeStages: [{ name: 'Full', startAge: 35, endAge: 95, annualContribution: 30000, annualWithdrawal: 0, inflationAdjusted: true }]
+});
+
+// STATISTICAL RETURNS: With correlations
+const statisticalResult = calculateFinancialGoals({
+  initialPortfolioValue: 500000,
+  currentAge: 35,
+  targetAge: 65,
+  simulationModel: 'statistical',
+  statisticalReturns: {
+    stocksMean: 0.10,
+    stocksStdDev: 0.18,
+    bondsMean: 0.04,
+    bondsStdDev: 0.06,
+    correlations: {
+      stocksBonds: 0.05,           // Low correlation (diversification benefit)
+      stocksInflation: 0.00,
+      bondsInflation: -0.30        // Negative correlation
+    }
+  },
+  stockAllocation: 0.60,
+  bondAllocation: 0.40,
+  lifeStages: [{ name: 'Full', startAge: 35, endAge: 95, annualContribution: 30000, annualWithdrawal: 0, inflationAdjusted: true }]
+});
+
+// PARAMETERIZED RETURNS: Choose distribution type
+const parameterizedResult = calculateFinancialGoals({
+  initialPortfolioValue: 500000,
+  currentAge: 35,
+  targetAge: 65,
+  simulationModel: 'parameterized',
+  parameterizedReturns: {
+    stocksMean: 0.08,
+    stocksStdDev: 0.16,
+    bondsMean: 0.035,
+    bondsStdDev: 0.05,
+    stocksDistribution: 'logNormal',    // LogNormal for skewed returns
+    bondsDistribution: 'normal',
+    tDistributionDf: 5                   // For fat tails if using t-distribution
+  },
+  stockAllocation: 0.70,
+  bondAllocation: 0.30,
+  lifeStages: [{ name: 'Full', startAge: 35, endAge: 95, annualContribution: 30000, annualWithdrawal: 0, inflationAdjusted: true }]
+});
+
+// ===== Quick Utility Functions =====
+
+// Quick success probability check
+const successRate = quickFinancialGoalsSuccessProbability(
+  500000,        // Initial portfolio
+  50000,         // Annual contribution
+  60000,         // Annual withdrawal (after retirement)
+  35,            // Current age
+  65,            // Retirement age
+  95,            // End age
+  0.70           // Stock allocation
+);
+console.log(`Success probability: ${(successRate * 100).toFixed(1)}%`);
+
+// Calculate required portfolio to achieve goals
+const requiredPortfolio = calculateRequiredPortfolioForGoals(
+  60000,         // Desired annual withdrawal in retirement
+  0.95,          // Target 95% success rate
+  30,            // Years in retirement
+  0.60           // Stock allocation
+);
+console.log(`Required portfolio: $${requiredPortfolio.toLocaleString()}`);
+
+// Calculate years to financial independence
+const yearsToFI = calculateYearsToFinancialIndependence(
+  100000,        // Current portfolio
+  50000,         // Annual contributions
+  1500000,       // Target portfolio (FI number)
+  0.07           // Expected return
+);
+console.log(`Years to FI: ${yearsToFI.toFixed(1)} years`);
+
+// Compare multiple life stage scenarios
+const scenarios = generateLifeStageScenarioComparison(
+  { 
+    initialPortfolioValue: 500000, 
+    currentAge: 35, 
+    targetAge: 65,
+    stockAllocation: 0.70,
+    bondAllocation: 0.30,
+    lifeStages: [{ name: 'Base', startAge: 35, endAge: 95, annualContribution: 40000, annualWithdrawal: 0, inflationAdjusted: true }]
+  },
+  [
+    { 
+      name: 'Early Retirement (Age 55)', 
+      changes: { targetAge: 55, lifeStages: [
+        { name: 'Accumulation', startAge: 35, endAge: 55, annualContribution: 60000, annualWithdrawal: 0, inflationAdjusted: true },
+        { name: 'Retirement', startAge: 55, endAge: 95, annualContribution: 0, annualWithdrawal: 50000, inflationAdjusted: true }
+      ]}
+    },
+    { 
+      name: 'Higher Savings Rate', 
+      changes: { lifeStages: [{ name: 'High Savings', startAge: 35, endAge: 95, annualContribution: 60000, annualWithdrawal: 0, inflationAdjusted: true }]}
+    },
+    { 
+      name: 'Conservative Allocation', 
+      changes: { stockAllocation: 0.50, bondAllocation: 0.50 }
+    }
+  ]
+);
+scenarios.forEach(s => {
+  console.log(`${s.name}: ${(s.successProbability * 100).toFixed(1)}% success, $${s.medianFinalBalance.toLocaleString()} median`);
+});
+```
+
+**Simulation Models**:
+| Model | Description | Best For |
+|-------|-------------|----------|
+| `historical` | Random sampling from 1926-2023 actual returns | Most realistic, uses real market history |
+| `forecasted` | User-specified mean and standard deviation | Custom assumptions, forward-looking |
+| `statistical` | Returns with correlations between assets | Advanced modeling, diversification analysis |
+| `parameterized` | Choose distribution type (Normal, LogNormal, T) | Fat tails, skewed returns modeling |
+
+**Distribution Types** (for parameterized model):
+| Type | Description |
+|------|-------------|
+| `normal` | Standard bell curve (symmetric) |
+| `logNormal` | Right-skewed (can't go below -100%) |
+| `tDistribution` | Fat tails (more extreme events) |
+
+**Glide Path Types**:
+| Type | Description |
+|------|-------------|
+| `linear` | Constant rate of change from start to end allocation |
+| `accelerated` | Faster change early, slower later |
+| `decelerated` | Slower change early, faster later |
+
+**Historical Data (1926-2023)**:
+- Stocks: 10.3% average return, 19.8% standard deviation
+- Bonds: 5.1% average return, 5.6% standard deviation
+- Inflation: 2.9% average, 4.1% standard deviation
+
+**Features That Competitors Don't Have**:
+- **Life Stage Scenario Planner**: Compare up to 4 complete life scenarios side-by-side with different career paths, retirement ages, and spending patterns
+- 4 simulation models in one calculator (historical, forecasted, statistical, parameterized)
+- Multiple cashflow goals with priorities and inflation adjustment
+- Life stages with different contribution/withdrawal patterns
+- Linear glide path with customizable transition period
+- Sequence of returns risk analysis with critical period identification
+- Year-by-year projections with survival rates
+- Sensitivity analysis showing how changes affect outcomes
+- Goal achievement rates per individual goal
+- Historical data from 1926-2023 for realistic backtesting
+
 All calculations use industry-standard formulas:
 
 ### Compound Interest

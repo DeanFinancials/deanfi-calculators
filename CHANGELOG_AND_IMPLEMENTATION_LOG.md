@@ -10,6 +10,7 @@ This document tracks all changes, implementations, and design decisions for the 
 
 ## Table of Contents
 
+- [Version 1.15.0 - Financial Goals Monte Carlo Calculator](#version-1150---2025-06-28)
 - [Version 1.14.0 - Safe Withdrawal Rate Calculator](#version-1140---2025-12-03)
 - [Version 1.13.0 - Savings Rate Calculator](#version-1130---2025-06-09)
 - [Version 1.12.0 - FIRE Calculator](#version-1120---2025-06-09)
@@ -29,6 +30,232 @@ This document tracks all changes, implementations, and design decisions for the 
 - [Version 1.0.1 - ESM Import Path Fix](#version-101---2025-11-21)
 - [Version 1.0.0 - Initial Publication](#version-100---2025-11-21)
 - [Pre-Publication Development](#pre-publication-development)
+
+---
+
+## Version 1.15.0 - 2025-06-28
+
+**Type:** New Feature (MINOR)  
+**Status:** Pending Publication  
+**npm:** @deanfinancials/calculators@1.15.0
+
+### Overview
+
+Added comprehensive Financial Goals Monte Carlo Calculator to the FIRE module. This calculator provides advanced Monte Carlo simulation for long-term financial goal planning with 4 return models (historical, forecasted, statistical, parameterized), multiple cashflow goals with life stages, linear glide path transitions, and comprehensive sequence of returns risk analysis. Inspired by Portfolio Visualizer's Monte Carlo simulation.
+
+### Key Features
+
+1. **Four Simulation Models**:
+   - **Historical**: Random sampling from 1926-2023 actual market returns
+   - **Forecasted**: User-specified mean and standard deviation
+   - **Statistical**: Returns with correlations between assets (Cholesky decomposition)
+   - **Parameterized**: Choose distribution type (Normal, LogNormal, T-distribution)
+
+2. **Life Stage Planning**:
+   - Define multiple life stages with different income/expense patterns
+   - Accumulation, Pre-Retirement, Retirement phases
+   - Inflation-adjusted contributions and withdrawals
+   - Customizable start/end ages for each stage
+
+3. **Multiple Cashflow Goals**:
+   - Define specific financial goals (college, home purchase, travel, etc.)
+   - Target age and amount for each goal
+   - Priority levels for goal funding order
+   - Inflation adjustment options
+   - Goal achievement rate tracking
+
+4. **Glide Path Asset Allocation**:
+   - Linear transition from aggressive to conservative
+   - Customizable start/end allocations
+   - Configurable transition period (e.g., ages 55-65)
+   - Three transition types: linear, accelerated, decelerated
+
+5. **Sequence of Returns Risk Analysis**:
+   - Impact score (0-100) measuring vulnerability
+   - Critical period identification (most vulnerable ages)
+   - Early years correlation with outcomes
+   - Risk mitigation recommendations
+
+6. **Comprehensive Outcome Analysis**:
+   - Success probability (all goals met)
+   - Partial success probability (some goals met)
+   - Percentile outcomes (P5, P10, P25, P50, P75, P90, P95)
+   - Year-by-year projections with survival rates
+   - Individual simulation paths for visualization
+
+7. **UNIQUE FEATURE: Life Stage Scenario Planner**:
+   - Compare up to 4 complete life scenarios side-by-side
+   - Different career paths, retirement ages, spending patterns
+   - Each scenario shows success probability, median outcome, insights
+   - Color-coded for visualization
+   - Differentiator from all competitors
+
+### Competition Research
+
+Analyzed the following competitors before implementation:
+
+1. **Portfolio Visualizer** (portfoliovisualizer.com):
+   - Monte Carlo simulation with historical, forecasted, statistical, parameterized models
+   - Multiple cashflow events
+   - Asset allocation modeling
+   - Our improvement: Life Stage Scenario Planner for complete life path comparison
+
+2. **engaging-data.com FIRE Calculator**:
+   - Basic Monte Carlo simulation
+   - Historical cycles analysis
+   - Our improvement: 4 simulation models vs their 1, life stages vs single phase
+
+3. **FIRECalc**:
+   - Historical simulation since 1871
+   - Focus on withdrawal rate safety
+   - Our improvement: Multiple goals, glide paths, parameterized distributions
+
+4. **Early Retirement Now**:
+   - Extensive safe withdrawal rate research
+   - Blog-based calculators
+   - Our improvement: Full UI integration, life stage comparison
+
+### New Files Created
+
+**src/fire/financialGoals.ts:**
+
+Complete Financial Goals Monte Carlo calculator with the following exports:
+
+**Types:**
+- `FinancialGoalsSimulationModel` - Union: 'historical' | 'forecasted' | 'statistical' | 'parameterized'
+- `FinancialGoalsDistributionType` - Union: 'normal' | 'logNormal' | 'tDistribution'
+- `FinancialGoalsCashflowGoal` - Goal with name, targetAge, amount, inflationAdjusted, priority
+- `FinancialGoalsLifeStage` - Stage with name, startAge, endAge, contributions, withdrawals
+- `FinancialGoalsGlidePath` - Glide path configuration with start/end allocations
+- `FinancialGoalsForecastedReturns` - User-specified mean/stdDev for forecasted model
+- `FinancialGoalsStatisticalReturns` - Returns with correlations for statistical model
+- `FinancialGoalsParameterizedReturns` - Distribution type options for parameterized model
+- `FinancialGoalsAssetAssumptions` - Default assumptions for asset classes
+- `FinancialGoalsInputs` - Complete input interface for calculation
+- `FinancialGoalsYearlyProjection` - Year-by-year projection data
+- `FinancialGoalsSimulationPath` - Individual simulation path data
+- `FinancialGoalsGoalAchievementRate` - Achievement metrics per goal
+- `FinancialGoalsSequenceRiskAnalysis` - Sequence of returns analysis
+- `FinancialGoalsSensitivityAnalysis` - Input sensitivity analysis
+- `FinancialGoalsLifeStageScenario` - Scenario comparison data
+- `FinancialGoalsResult` - Complete result interface
+
+**Constants:**
+- `FINANCIAL_GOALS_HISTORICAL_DATA` - Stocks, bonds, inflation returns 1926-2023
+- `FINANCIAL_GOALS_DEFAULT_ASSET_ASSUMPTIONS` - Default mean/stdDev for assets
+- `FINANCIAL_GOALS_SCENARIO_COLORS` - Colors for scenario visualization
+
+**Main Functions:**
+- `calculateFinancialGoals(inputs)` - Main comprehensive calculation (10,000 simulations default)
+- `runSingleSimulation(inputs, simulationId)` - Execute single Monte Carlo path
+
+**Return Generation Functions:**
+- `generateHistoricalReturns(numYears)` - Sample from 1926-2023 historical data
+- `generateForecastedReturns(inputs)` - Generate returns from user assumptions
+- `generateStatisticalReturns(inputs)` - Generate correlated returns (Cholesky)
+- `generateParameterizedReturns(inputs)` - Generate from chosen distribution
+
+**Analysis Functions:**
+- `analyzeSequenceOfReturnsRisk(simulations, inputs)` - Sequence risk analysis
+- `generateLifeStageScenarios(baseInputs, scenarios)` - Scenario comparison
+- `runSensitivityAnalysis(inputs)` - Input sensitivity testing
+
+**Quick Utility Functions:**
+- `quickFinancialGoalsSuccessProbability(...)` - Quick success probability estimate
+- `calculateRequiredPortfolioForGoals(...)` - Required portfolio for goals
+- `calculateYearsToFinancialIndependence(...)` - Years to reach FI number
+
+**Internal Utility Functions:**
+- `generateNormalRandom()` - Box-Muller transform for normal distribution
+- `generateLogNormalRandom(mean, stdDev)` - Log-normal distribution
+- `generateTDistributionRandom(df)` - Student's t-distribution
+- `choleskyDecomposition(correlations)` - For correlated returns
+- `applyCorrelation(uncorrelated, choleskyMatrix)` - Apply correlations
+- `calculateAllocation(inputs, age)` - Get allocation at given age (with glide path)
+- `percentile(arr, p)` - Calculate percentile from array
+
+### Files Modified
+
+**src/index.ts:**
+- Added exports for all Financial Goals calculator types, constants, and functions
+- Used TypeScript "as" aliasing to avoid conflicts with existing exports:
+  - `SimulationModel` → `FinancialGoalsSimulationModel`
+  - `SequenceRiskAnalysis` → `FinancialGoalsSequenceRiskAnalysis`
+  - `SCENARIO_COLORS` → `FINANCIAL_GOALS_SCENARIO_COLORS`
+
+**README.md:**
+- Added complete documentation for Financial Goals Calculator (Section 24 in FIRE module)
+- Includes code examples for all 4 simulation models
+- Documents life stages, cashflow goals, glide paths
+- Shows quick utility function usage
+- Documents unique Life Stage Scenario Planner feature
+
+**CHANGELOG_AND_IMPLEMENTATION_LOG.md:**
+- Added Version 1.15.0 entry (this entry)
+- Updated Table of Contents
+
+### Technical Implementation Details
+
+**Monte Carlo Engine:**
+- Default 10,000 simulations for statistical significance
+- Box-Muller transform for normal distribution
+- Cholesky decomposition for correlated returns
+- Year-by-year portfolio evolution with contributions/withdrawals
+
+**Glide Path Implementation:**
+```typescript
+// Linear interpolation between start and end allocations
+const progress = (currentAge - transitionStartAge) / (transitionEndAge - transitionStartAge);
+const stocks = startAllocation.stocks + progress * (endAllocation.stocks - startAllocation.stocks);
+```
+
+**Statistical Correlations (Cholesky Decomposition):**
+```typescript
+// Generates correlated returns from uncorrelated normal samples
+// Lower triangular matrix multiplication preserves correlation structure
+```
+
+**Parameterized Distributions:**
+- **Normal**: Standard Box-Muller
+- **LogNormal**: exp(normal) - 1, ensures returns can't go below -100%
+- **T-Distribution**: Normal / sqrt(chi-squared/df) for fat tails
+
+### Research Documentation Links
+
+The following sources were consulted during implementation:
+
+1. **Portfolio Visualizer Monte Carlo**: https://www.portfoliovisualizer.com/monte-carlo-simulation
+2. **engaging-data FIRE Calculator**: https://engaging-data.com/fire-calculator/
+3. **FIRECalc**: https://firecalc.com/
+4. **Early Retirement Now SWR Series**: https://earlyretirementnow.com/safe-withdrawal-rate-series/
+5. **Trinity Study**: https://www.onefpa.org/journal/Pages/Portfolio%20Success%20Rates%20Where%20to%20Draw%20the%20Line.aspx
+6. **Cholesky Decomposition**: https://en.wikipedia.org/wiki/Cholesky_decomposition
+7. **Box-Muller Transform**: https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
+
+### Breaking Changes
+
+None - this is an additive feature release.
+
+### Migration Notes
+
+No migration needed. New exports are available immediately after updating.
+
+### Testing Notes
+
+The calculator should be tested with:
+1. Historical model with various time horizons (30, 40, 50 years)
+2. Multiple life stages with transitions
+3. Glide path allocations (verify allocation at each age)
+4. Multiple cashflow goals with priorities
+5. Edge cases: zero contributions, 100% stock allocation, very long horizons
+
+### Next Steps After Publishing
+
+1. Update deanfi-website to @deanfinancials/calculators@1.15.0
+2. Create Financial Goals Monte Carlo Calculator page in deanfi-website
+3. Follow CALCULATOR_PAGE_CHECKLIST.md for UI implementation
+4. Add Life Stage Scenario Planner visualization
+5. Create educational content about Monte Carlo simulation
 
 ---
 
