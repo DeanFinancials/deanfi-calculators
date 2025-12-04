@@ -10,6 +10,7 @@ This document tracks all changes, implementations, and design decisions for the 
 
 ## Table of Contents
 
+- [Version 1.16.0 - Coast FIRE Calculator](#version-1160---2025-12-04)
 - [Version 1.15.0 - Financial Goals Monte Carlo Calculator](#version-1150---2025-06-28)
 - [Version 1.14.0 - Safe Withdrawal Rate Calculator](#version-1140---2025-12-03)
 - [Version 1.13.0 - Savings Rate Calculator](#version-1130---2025-06-09)
@@ -30,6 +31,248 @@ This document tracks all changes, implementations, and design decisions for the 
 - [Version 1.0.1 - ESM Import Path Fix](#version-101---2025-11-21)
 - [Version 1.0.0 - Initial Publication](#version-100---2025-11-21)
 - [Pre-Publication Development](#pre-publication-development)
+
+---
+
+## Version 1.16.0 - 2025-12-04
+
+**Type:** New Feature (MINOR)  
+**Status:** Pending Publication  
+**npm:** @deanfinancials/calculators@1.16.0
+
+### Overview
+
+Added dedicated Coast FIRE Calculator to the FIRE module. Coast FIRE is when you have enough invested that compound growth alone will grow your portfolio to your FIRE number by traditional retirement age, without any additional contributions. This calculator provides comprehensive Coast FIRE planning with unique features including multi-retirement age comparison, "when can I coast" reverse calculator, part-time income scenarios, risk tolerance variations, and visual trajectory projections.
+
+### Why a Dedicated Coast FIRE Calculator?
+
+While the existing FIRE Calculator (v1.12.0) includes Coast FIRE analysis, a dedicated calculator offers:
+
+1. **High Search Volume & Growing Interest** - "Coast FIRE calculator" is a targeted search term
+2. **Different Audience** - Appeals to those seeking flexibility, not just aggressive early retirement
+3. **Deeper Analysis** - More scenarios, comparisons, and Coast FIRE-specific projections
+4. **SEO Opportunity** - Competing against blog posts, not established calculators
+5. **Complements Existing Suite** - FIRE, Savings Rate, SWR, Financial Goals, and now Coast FIRE
+
+### Key Features
+
+1. **Coast FIRE Number Calculation**:
+   - Calculate how much you need TODAY to reach FIRE through growth alone
+   - Based on compound growth formula accounting for inflation
+   - Adjustable for different withdrawal rates and return assumptions
+
+2. **"When Can I Coast?" Reverse Calculator**:
+   - Find the exact age when you can stop aggressive saving
+   - Iteratively calculates when portfolio crosses the coast line
+   - Shows years to coast, portfolio at coast age, calendar year
+
+3. **Multi-Retirement Age Comparison** (UNIQUE FEATURE):
+   - Compare Coast FIRE at ages 55, 60, 65, 67 side-by-side
+   - Shows FIRE number, coast number, coast age, coasting years for each
+   - Color-coded for visualization
+   - Differentiator from all competitors
+
+4. **Three Trajectory Visualization**:
+   - **Continue Saving**: Portfolio growth with continued contributions
+   - **Coast Now**: Portfolio growth if you stop saving today
+   - **Coast at Optimal Age**: Portfolio growth if you coast at calculated coast age
+   - Year-by-year data for charting
+
+5. **Part-Time Income Scenarios**:
+   - Minimal ($1,000/mo), Moderate ($2,000/mo), Substantial ($3,000/mo), Barista FIRE ($1,500/mo)
+   - Shows years earlier to coast with part-time income
+   - Total part-time earnings through retirement
+   - Perfect for Barista FIRE planning
+
+6. **Risk Tolerance Variations**:
+   - Conservative (5% real return), Moderate (6%), Aggressive (7%)
+   - Shows how return assumptions affect coast number and timeline
+   - Color-coded for visualization
+
+7. **Coast FIRE Milestones**:
+   - Track 25%, 50%, 75%, 100% progress toward Coast FIRE
+   - Projected achievement ages for each milestone
+   - Personalized descriptions and status
+
+8. **Coast Number by Age**:
+   - Shows how Coast FIRE number decreases as you approach retirement
+   - Creates the "coast line" for visualization
+   - Gap tracking at each age
+
+9. **Personalized Insights & Recommendations**:
+   - Status-specific advice (not-started, building, coast-ready, fire-ready)
+   - Impact analysis of doubling savings
+   - Coasting years calculation
+   - Age-specific recommendations
+
+### Competition Research
+
+Analyzed the following competitors before implementation:
+
+1. **WalletBurst Coast FIRE Calc** (tools.walletburst.com):
+   - Basic inputs: age, retirement age, savings, expenses, return, inflation, SWR
+   - Single chart showing net worth vs coast line
+   - Our improvement: Multi-retirement age comparison, part-time income scenarios, three trajectory visualization
+
+2. **engaging-data.com FIRE Calculator**:
+   - Comprehensive FIRE calculator with Coast FIRE as sub-feature
+   - Historical cycles, Monte Carlo simulation
+   - Our improvement: Dedicated Coast FIRE focus, "when can I coast" reverse calc, risk tolerance variations
+
+3. **FIRECalc** (firecalc.com):
+   - Historical simulation since 1871
+   - No dedicated Coast FIRE calculator
+   - Our improvement: Coast FIRE-specific analysis, milestones, part-time income
+
+4. **ChooseFI, TheWaysToWealth, BecauseMoney**:
+   - Pages not found or no dedicated Coast FIRE calculators
+   - Major opportunity for ranking
+
+### New Files Created
+
+**src/fire/coastFIRECalculator.ts:**
+
+Complete Coast FIRE calculator with the following exports:
+
+**Types:**
+- `CoastFIRERiskTolerance` - Union: 'conservative' | 'moderate' | 'aggressive'
+- `CoastFIREStatus` - Union: 'not-started' | 'building' | 'coast-ready' | 'fire-ready'
+- `CoastFIREInputs` - Input interface for calculation
+- `WhenCanICoastResult` - Result of reverse coast age calculation
+- `CoastAgeAnalysis` - Coast analysis for different retirement ages
+- `CoastNumberByAge` - Coast FIRE number at each age
+- `CoastFIREYearlyProjection` - Year-by-year projection data
+- `PartTimeIncomeScenario` - Part-time income scenario analysis
+- `RiskToleranceScenario` - Risk tolerance impact analysis
+- `CoastFIREMilestone` - Milestone tracking interface
+- `RetirementAgeComparison` - Multi-retirement age comparison
+- `CoastFIREResult` - Complete result interface
+
+**Constants:**
+- `RISK_TOLERANCE_RETURNS` - Return assumptions by risk level
+- `COAST_FIRE_DEFAULTS` - Default input values
+- `COAST_FIRE_COLORS` - Colors for visualization
+- `PART_TIME_INCOME_SCENARIOS` - Part-time income templates
+
+**Core Mathematical Functions:**
+- `calculateRealReturn(nominalReturn, inflationRate)` - Calculate real return after inflation
+- `calculateFIRENumberForCoast(annualExpenses, safeWithdrawalRate)` - Calculate FIRE number
+- `calculateCoastFIRENumber(fireNumber, yearsToRetirement, realReturn)` - Calculate Coast FIRE target
+- `calculateFutureValueNoContributions(presentValue, realReturn, years)` - Compound growth without contributions
+- `calculateFutureValueWithContributions(presentValue, annualContribution, realReturn, years)` - Compound growth with contributions
+- `calculateYearsToTargetNoContributions(presentValue, targetValue, realReturn)` - Years to reach target (no contributions)
+- `calculateYearsToTargetWithContributions(presentValue, annualContribution, targetValue, realReturn)` - Years to reach target (with contributions)
+- `determineCoastFIREStatus(currentSavings, coastFIRENumber, fireNumber)` - Determine current status
+- `calculateProgress(current, target)` - Calculate progress percentage
+- `getRealReturnForRiskTolerance(riskTolerance)` - Get real return for risk level
+
+**Analysis Functions:**
+- `calculateWhenCanICoast(inputs)` - Reverse calculation: find coast age
+- `analyzeCoastAgesByRetirement(inputs, retirementAges)` - Coast analysis for multiple retirement ages
+- `calculateCoastNumbersByAge(inputs)` - Coast numbers from current age to retirement
+- `generateCoastFIREProjections(inputs)` - Year-by-year projections with three trajectories
+- `generatePartTimeIncomeScenarios(inputs)` - Part-time income scenario generation
+- `generateRiskToleranceScenarios(inputs)` - Risk tolerance scenario generation
+- `generateCoastFIREMilestones(inputs)` - Milestone generation
+- `compareRetirementAges(inputs, retirementAges)` - Multi-retirement age comparison
+- `generateCoastFIREInsights(inputs, ...)` - Generate personalized insights
+- `generateCoastFIRERecommendations(inputs, status, whenCanICoast)` - Generate recommendations
+- `generateCoastFIREWarnings(inputs, projections)` - Generate warnings
+
+**Main Calculation:**
+- `calculateCoastFIRE(inputs)` - Main comprehensive Coast FIRE calculation
+
+**Quick Utilities:**
+- `quickCoastFIRENumber(annualExpenses, yearsToRetirement, ...)` - Quick coast number calculation
+- `isCoastFIREAchieved(currentSavings, annualExpenses, yearsToRetirement, ...)` - Quick achievement check
+- `quickYearsToCoastFIRE(currentSavings, monthlySavings, ...)` - Quick years to coast
+- `compareCoastFIREScenarios(baseInputs, scenarios)` - Compare multiple scenarios
+
+### Files Modified
+
+**src/index.ts:**
+- Added exports for all Coast FIRE calculator types, constants, and functions
+- Total of 50+ new exports added
+
+**README.md:**
+- Added complete documentation for Coast FIRE Calculator (Section 25 in FIRE module)
+- Includes code examples for all features
+- Documents unique Multi-Retirement Age Comparison feature
+- Shows quick utility function usage
+
+**CHANGELOG_AND_IMPLEMENTATION_LOG.md:**
+- Added Version 1.16.0 entry (this entry)
+- Updated Table of Contents
+
+### Technical Implementation Details
+
+**Coast FIRE Number Formula:**
+```typescript
+// Coast FIRE = FIRE Number / (1 + realReturn)^yearsToRetirement
+coastFIRENumber = fireNumber / Math.pow(1 + realReturn, yearsToRetirement);
+```
+
+**Real Return Calculation:**
+```typescript
+// Real return = (1 + nominal) / (1 + inflation) - 1
+realReturn = (1 + expectedReturn) / (1 + inflationRate) - 1;
+```
+
+**When Can I Coast Algorithm:**
+```typescript
+// Iteratively find when portfolio crosses coast line
+while (years < maxYears) {
+  years++;
+  balance = balance * (1 + realReturn) + annualContribution;
+  const coastNumberAtAge = calculateCoastFIRENumber(fireNumber, retirementAge - (currentAge + years), realReturn);
+  if (balance >= coastNumberAtAge) break;
+}
+```
+
+**Part-Time Income Impact:**
+Part-time income reduces effective expenses, lowering the FIRE number needed:
+```typescript
+effectiveExpenses = Math.max(annualExpenses - partTimeIncome, annualExpenses * 0.2);
+```
+
+### Research Documentation Links
+
+The following sources were consulted during implementation:
+
+1. **WalletBurst Coast FIRE Calculator**: https://tools.walletburst.com/tools/coast-fire-calc/
+2. **engaging-data FIRE Calculator**: https://engaging-data.com/fire-calculator/
+3. **FIRECalc**: https://firecalc.com/
+4. **Mr. Money Mustache on Coast FIRE**: https://www.mrmoneymustache.com/
+5. **ChooseFI Coast FI**: https://www.choosefi.com/coast-fi/
+
+### Breaking Changes
+
+None - this is an additive feature release.
+
+### Migration Notes
+
+No migration needed. New exports are available immediately after updating.
+
+### Testing Notes
+
+The calculator should be tested with:
+1. Various current ages and retirement ages
+2. Different savings rates ($0, low, high)
+3. Already achieved Coast FIRE scenarios
+4. Already achieved full FIRE scenarios
+5. Part-time income combinations
+6. Risk tolerance variations
+7. Edge cases: 0 savings, very long horizons, negative gaps
+
+### Next Steps After Publishing
+
+1. Update deanfi-website to @deanfinancials/calculators@1.16.0
+2. Create Coast FIRE Calculator page in deanfi-website
+3. Follow CALCULATOR_PAGE_CHECKLIST.md for UI implementation
+4. Add Multi-Retirement Age Comparison visualization
+5. Add Three Trajectory chart (continued saving vs coast now vs optimal)
+6. Create educational content about Coast FIRE concept
+7. SEO optimization for "coast fire calculator" keywords
 
 ---
 

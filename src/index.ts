@@ -483,3 +483,56 @@ export {
   compareFinancialScenarios,
   calculateYearsToFI as calculateYearsToFIGoals
 } from './fire/financialGoals.js';
+
+// Coast FIRE Calculator
+export {
+  // Types
+  type CoastFIRERiskTolerance,
+  type CoastFIREStatus,
+  type CoastFIREInputs,
+  type WhenCanICoastResult,
+  type CoastAgeAnalysis,
+  type CoastNumberByAge,
+  type CoastFIREYearlyProjection,
+  type PartTimeIncomeScenario,
+  type RiskToleranceScenario,
+  type CoastFIREMilestone,
+  type RetirementAgeComparison,
+  type CoastFIREResult,
+  // Constants
+  RISK_TOLERANCE_RETURNS,
+  COAST_FIRE_DEFAULTS,
+  COAST_FIRE_COLORS,
+  PART_TIME_INCOME_SCENARIOS,
+  // Core Mathematical Functions
+  calculateRealReturn,
+  calculateFIRENumberForCoast,
+  calculateCoastFIRENumber,
+  calculateFutureValueNoContributions,
+  calculateFutureValueWithContributions,
+  calculateYearsToTargetNoContributions,
+  calculateYearsToTargetWithContributions,
+  determineCoastFIREStatus,
+  calculateProgress,
+  getRealReturnForRiskTolerance,
+  // Coast Age Analysis & Trajectories
+  calculateWhenCanICoast,
+  analyzeCoastAgesByRetirement,
+  calculateCoastNumbersByAge,
+  generateCoastFIREProjections,
+  // Part-Time Income, Risk Tolerance & Milestones
+  generatePartTimeIncomeScenarios,
+  generateRiskToleranceScenarios,
+  generateCoastFIREMilestones,
+  compareRetirementAges,
+  generateCoastFIREInsights,
+  generateCoastFIRERecommendations,
+  generateCoastFIREWarnings,
+  // Main Calculation
+  calculateCoastFIRE,
+  // Quick Utilities
+  quickCoastFIRENumber,
+  isCoastFIREAchieved,
+  quickYearsToCoastFIRE,
+  compareCoastFIREScenarios
+} from './fire/coastFIRECalculator.js';

@@ -2496,6 +2496,288 @@ scenarios.forEach(s => {
 - Goal achievement rates per individual goal
 - Historical data from 1926-2023 for realistic backtesting
 
+#### 25. Coast FIRE Calculator
+Dedicated calculator for Coast FIRE planning - the point where you have enough invested that compound growth alone will reach your FIRE number by traditional retirement age. Unlike the general FIRE calculator's Coast FIRE analysis, this dedicated version provides deep Coast FIRE-specific features including multiple retirement age comparison, "when can I coast" reverse calculator, part-time income scenarios, and risk tolerance variations.
+
+```typescript
+import { 
+  calculateCoastFIRE,
+  calculateWhenCanICoast,
+  quickCoastFIRENumber,
+  quickYearsToCoastFIRE,
+  isCoastFIREAchieved,
+  analyzeCoastAgesByRetirement,
+  calculateCoastNumbersByAge,
+  generateCoastFIREProjections,
+  generatePartTimeIncomeScenarios,
+  generateRiskToleranceScenarios,
+  compareRetirementAges,
+  compareCoastFIREScenarios,
+  type CoastFIREInputs,
+  type CoastFIREResult,
+  type CoastFIRERiskTolerance,
+  type CoastFIREStatus,
+  type WhenCanICoastResult,
+  type CoastAgeAnalysis,
+  type CoastNumberByAge,
+  type CoastFIREYearlyProjection,
+  type PartTimeIncomeScenario,
+  type RiskToleranceScenario,
+  type CoastFIREMilestone,
+  type RetirementAgeComparison,
+  RISK_TOLERANCE_RETURNS,
+  COAST_FIRE_DEFAULTS,
+  COAST_FIRE_COLORS,
+  PART_TIME_INCOME_SCENARIOS
+} from '@deanfinancials/calculators';
+
+// Full Coast FIRE analysis
+const result = calculateCoastFIRE({
+  currentAge: 30,
+  targetRetirementAge: 65,
+  currentSavings: 100000,
+  annualExpenses: 50000,           // Expected retirement expenses
+  monthlySavings: 2000,            // Current monthly contributions
+  expectedReturn: 0.07,            // 7% nominal return
+  inflationRate: 0.03,             // 3% inflation
+  safeWithdrawalRate: 0.04,        // 4% withdrawal rate
+  riskTolerance: 'moderate',       // 'conservative', 'moderate', 'aggressive'
+  partTimeIncome: 0,               // Optional part-time income during coast
+  partTimeEndAge: 60               // When to stop part-time work
+});
+
+// Core results
+console.log(result.coastFIRENumber);          // $291,919 - amount needed TODAY to coast
+console.log(result.fireNumber);               // $1,250,000 - full FIRE target
+console.log(result.status);                   // 'building' | 'coast-ready' | 'fire-ready'
+console.log(result.coastFIREAchieved);        // false (not yet at Coast FIRE)
+console.log(result.coastFIREProgress);        // 34.3% (progress toward Coast FIRE)
+console.log(result.gapToCoastFIRE);           // $191,919 (amount still needed)
+
+// "When Can I Coast?" analysis
+console.log(result.whenCanICoast.coastAge);           // 37 (age when Coast FIRE achieved)
+console.log(result.whenCanICoast.yearsToCoast);       // 7 years
+console.log(result.whenCanICoast.portfolioAtCoastAge); // $292,000+
+console.log(result.whenCanICoast.alreadyCoastFIRE);   // false
+console.log(result.whenCanICoast.coastYear);          // 2032
+
+// Coast age for different retirement targets
+result.coastAgeAnalysis.forEach(analysis => {
+  console.log(`Retire at ${analysis.retirementAge}: Coast at ${analysis.coastAchievedAge}`);
+  console.log(`  Coast number today: $${analysis.coastNumberToday.toLocaleString()}`);
+  console.log(`  Already achieved: ${analysis.alreadyAchieved}`);
+});
+
+// Coast FIRE number at each age (for visualization)
+result.coastNumbersByAge.forEach(byAge => {
+  console.log(`Age ${byAge.age}: Coast # = $${byAge.coastNumber.toLocaleString()}`);
+  console.log(`  ${byAge.achieved ? '✓ Achieved' : `Gap: $${byAge.gap.toLocaleString()}`}`);
+});
+
+// Year-by-year projections (3 trajectories for charting)
+result.projections.forEach(proj => {
+  console.log(`Age ${proj.age}:`);
+  console.log(`  Continue saving: $${proj.balanceWithContributions.toLocaleString()}`);
+  console.log(`  Coast now: $${proj.balanceCoasting.toLocaleString()}`);
+  console.log(`  Coast at optimal: $${proj.balanceCoastingFromOptimal.toLocaleString()}`);
+  console.log(`  Coast # at age: $${proj.coastNumberAtAge.toLocaleString()}`);
+  console.log(`  Coast achieved: ${proj.coastAchieved}`);
+});
+
+// Milestones toward Coast FIRE
+result.milestones.forEach(milestone => {
+  console.log(`${milestone.name}: $${milestone.amount.toLocaleString()}`);
+  console.log(`  ${milestone.achieved ? `✓ Achieved at age ${milestone.ageAchieved}` : `Projected: age ${milestone.ageAchieved}`}`);
+});
+
+// Part-time income scenarios during coast phase
+result.partTimeScenarios.forEach(scenario => {
+  console.log(`${scenario.description}: $${scenario.monthlyIncome}/month`);
+  console.log(`  Coast ${scenario.yearsEarlierToCoast} years earlier at age ${scenario.newCoastAge}`);
+  console.log(`  Total PT earnings: $${scenario.totalPartTimeEarnings.toLocaleString()}`);
+});
+
+// Risk tolerance impact
+result.riskToleranceScenarios.forEach(scenario => {
+  console.log(`${scenario.riskLevel}: ${(scenario.expectedRealReturn * 100).toFixed(0)}% real return`);
+  console.log(`  Coast number: $${scenario.coastNumber.toLocaleString()}`);
+  console.log(`  Coast age: ${scenario.coastAge}`);
+});
+
+// UNIQUE FEATURE: Retirement age comparison
+result.retirementAgeComparison.forEach(comparison => {
+  console.log(`Retire at ${comparison.retirementAge}:`);
+  console.log(`  FIRE number: $${comparison.fireNumber.toLocaleString()}`);
+  console.log(`  Coast number today: $${comparison.coastNumberToday.toLocaleString()}`);
+  console.log(`  Coast at age: ${comparison.coastAge}`);
+  console.log(`  Coasting years: ${comparison.coastingYears}`);
+  console.log(`  Already at Coast FIRE: ${comparison.alreadyCoastFIRE}`);
+});
+
+// Summary and insights
+console.log(result.summary);                  // Human-readable summary
+console.log(result.insights);                 // Array of personalized insights
+console.log(result.recommendations);          // Array of recommendations
+console.log(result.warnings);                 // Array of warnings
+
+// ===== Quick Utility Functions =====
+
+// Quick Coast FIRE number calculation
+const coastNum = quickCoastFIRENumber(
+  50000,         // Annual expenses
+  35,            // Years to retirement
+  0.07,          // Expected return
+  0.03,          // Inflation
+  0.04           // Safe withdrawal rate
+);
+console.log(`Coast FIRE number: $${coastNum.toLocaleString()}`);
+
+// Quick check if Coast FIRE achieved
+const achieved = isCoastFIREAchieved(
+  150000,        // Current savings
+  50000,         // Annual expenses
+  30,            // Years to retirement
+  0.07,          // Expected return
+  0.03,          // Inflation
+  0.04           // Safe withdrawal rate
+);
+console.log(`Coast FIRE achieved: ${achieved}`);
+
+// Quick years to Coast FIRE
+const yearsToCoast = quickYearsToCoastFIRE(
+  100000,        // Current savings
+  2000,          // Monthly savings
+  50000,         // Annual expenses
+  30,            // Current age
+  65,            // Target retirement age
+  0.07,          // Expected return
+  0.03,          // Inflation
+  0.04           // Safe withdrawal rate
+);
+console.log(`Years to Coast FIRE: ${yearsToCoast}`);
+
+// ===== Standalone Analysis Functions =====
+
+// When can I coast? (standalone)
+const whenCoast = calculateWhenCanICoast({
+  currentAge: 30,
+  targetRetirementAge: 65,
+  currentSavings: 100000,
+  annualExpenses: 50000,
+  monthlySavings: 2000
+});
+
+// Coast ages for different retirement targets (standalone)
+const coastAges = analyzeCoastAgesByRetirement(
+  { currentAge: 30, targetRetirementAge: 65, currentSavings: 100000, annualExpenses: 50000, monthlySavings: 2000 },
+  [55, 60, 65, 67, 70]  // Different retirement ages to analyze
+);
+
+// Coast numbers at each age (for charting the "coast line")
+const coastNumbers = calculateCoastNumbersByAge({
+  currentAge: 30,
+  targetRetirementAge: 65,
+  currentSavings: 100000,
+  annualExpenses: 50000,
+  monthlySavings: 2000
+});
+
+// Generate part-time income scenarios
+const ptScenarios = generatePartTimeIncomeScenarios({
+  currentAge: 30,
+  targetRetirementAge: 65,
+  currentSavings: 100000,
+  annualExpenses: 50000,
+  monthlySavings: 2000
+});
+
+// Generate risk tolerance scenarios
+const riskScenarios = generateRiskToleranceScenarios({
+  currentAge: 30,
+  targetRetirementAge: 65,
+  currentSavings: 100000,
+  annualExpenses: 50000,
+  monthlySavings: 2000
+});
+
+// Compare multiple retirement ages
+const retirementComparison = compareRetirementAges(
+  { currentAge: 30, targetRetirementAge: 65, currentSavings: 100000, annualExpenses: 50000, monthlySavings: 2000 },
+  [55, 60, 65, 67]
+);
+
+// Compare multiple Coast FIRE scenarios
+const scenarios = compareCoastFIREScenarios(
+  { currentAge: 30, targetRetirementAge: 65, currentSavings: 100000, annualExpenses: 50000, monthlySavings: 2000 },
+  [
+    { monthlySavings: 3000 },           // Higher savings
+    { annualExpenses: 40000 },           // Lower expenses
+    { targetRetirementAge: 60 }          // Earlier retirement
+  ]
+);
+console.log(`Base: Coast at age ${scenarios.base.whenCanICoast.coastAge}`);
+scenarios.scenarios.forEach((s, i) => {
+  console.log(`Scenario ${i + 1}: Coast at age ${s.whenCanICoast.coastAge}`);
+});
+```
+
+**Coast FIRE Status Types**:
+| Status | Description |
+|--------|-------------|
+| `not-started` | No savings yet |
+| `building` | Working toward Coast FIRE |
+| `coast-ready` | Can coast now - investments will grow to FIRE |
+| `fire-ready` | Already at full FIRE number |
+
+**Risk Tolerance Return Assumptions**:
+| Risk Level | Real Return | Description |
+|------------|-------------|-------------|
+| `conservative` | 5% | Lower risk, bond-heavy portfolio |
+| `moderate` | 6% | Balanced stock/bond portfolio |
+| `aggressive` | 7% | Stock-heavy portfolio |
+
+**Part-Time Income Scenario Templates**:
+| Scenario | Monthly Income | Description |
+|----------|----------------|-------------|
+| Minimal | $1,000 | Very part-time, 10-15 hrs/week |
+| Moderate | $2,000 | Part-time, 20-25 hrs/week |
+| Substantial | $3,000 | Near full-time equivalent |
+| Barista FIRE | $1,500 | Classic Barista FIRE scenario |
+
+**Key Formulas**:
+```
+Coast FIRE Number = FIRE Number / (1 + realReturn)^yearsToRetirement
+
+Where:
+- FIRE Number = Annual Expenses / Safe Withdrawal Rate
+- realReturn = (1 + nominalReturn) / (1 + inflation) - 1
+- yearsToRetirement = targetRetirementAge - currentAge
+
+Example:
+FIRE Number = $50,000 / 0.04 = $1,250,000
+Real Return = (1.07 / 1.03) - 1 = 3.88%
+Years to Retirement = 65 - 30 = 35 years
+Coast FIRE = $1,250,000 / (1.0388)^35 = $329,051
+```
+
+**Features That Competitors Don't Have**:
+- **Multi-Retirement Age Comparison**: Compare Coast FIRE at ages 55, 60, 65, 67 side-by-side
+- **"When Can I Coast?" Reverse Calculator**: Find the exact age you can stop aggressive saving
+- **Part-Time Income Scenarios**: See how Barista FIRE income extends your coasting
+- **Risk Tolerance Variations**: Compare conservative, moderate, and aggressive assumptions
+- **Three Trajectory Visualization**: Chart continued saving vs coast now vs coast at optimal age
+- **Coast FIRE Milestones**: Track 25%, 50%, 75%, 100% progress toward Coast FIRE
+- **Coast Number by Age**: See how Coast FIRE number decreases as you approach retirement
+- **Personalized Insights**: Context-aware recommendations based on your situation
+
+**Why Coast FIRE Deserves Its Own Calculator**:
+While the main FIRE Calculator includes Coast FIRE analysis, this dedicated calculator provides:
+1. **Deeper Analysis** - More scenarios, comparisons, and projections
+2. **Different Audience** - Appeals to those seeking flexibility, not just early retirement
+3. **Unique Visualizations** - Coast line, three trajectories, retirement age comparison
+4. **Part-Time Focus** - Integrates part-time income scenarios prominently
+5. **SEO Opportunity** - Targets "coast fire calculator" searches specifically
+
 All calculations use industry-standard formulas:
 
 ### Compound Interest
